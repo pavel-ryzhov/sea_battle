@@ -1,0 +1,45 @@
+<resources>
+    <string name="app_name">sea battle</string>
+
+    <string name="incorrect_location">Incorrect location!</string>
+
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+
+    <string name="wait_until_another_player_joins">Wait until another player joins</string>
+
+    <string name="enter_time_bound">Choose the time allotted for the turn:</string>
+
+    <string name="time">Enter time in seconds</string>
+
+    <string name="wrong_time">Wrong time!</string>
+
+<!--    <string-array name="time_bounds">-->
+<!--        <item>5 sec</item>-->
+<!--        <item>10 sec</item>-->
+<!--        <item>15 sec</item>-->
+<!--        <item>20 sec</item>-->
+<!--        <item>25 sec</item>-->
+<!--        <item>30 sec</item>-->
+<!--        <item>35 sec</item>-->
+<!--        <item>40 sec</item>-->
+<!--        <item>45 sec</item>-->
+<!--        <item>50 sec</item>-->
+<!--        <item>55 sec</item>-->
+<!--        <item>60 sec</item>-->
+<!--    </string-array>-->
+
+    <string-array name="coords">
+        <item>A</item>
+        <item>B</item>
+        <item>C</item>
+        <item>D</item>
+        <item>E</item>
+        <item>F</item>
+        <item>G</item>
+        <item>H</item>
+        <item>I</item>
+        <item>J</item>
+    </string-array>
+
+</resources>
