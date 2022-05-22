@@ -79,9 +79,7 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
                         futures.add(executorService.submit<Socket?>{
                             try {
                                 val socket = Socket()
-//                                Log.d("ssss", inetAddress.hostAddress + ":${startPort + i}")
                                 socket.connect(InetSocketAddress(inetAddress, startPort + i), 5000)
-                                Log.d("ssss", "connected: $socket")
                                 return@submit if (verifyServer(clientName, socket)) {
                                     socket
                                 } else {
@@ -110,20 +108,16 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
 
     override fun verifyServer(clientName: String, socket: Socket): Boolean {
         try {
-            Log.d("ffff", "378327836736532632e")
             val bufferedReader = SpecialBufferedReader(socket.getInputStream())
             val str = bufferedReader.readString()
-            Log.d("ffff", "cdddddeddeedde")
             if (str != BuildConfig.VERSION_CODE.toString()) {
                 return false
             }
-            Log.d("ffff", "cddeedde")
             val name = bufferedReader.readString()
             val timeBound = bufferedReader.readString().toInt()
             val bufferedWriter = SpecialBufferedWriter(socket.getOutputStream())
             bufferedWriter.writeString(BuildConfig.VERSION_CODE.toString())
             bufferedWriter.writeString(clientName)
-            Log.d("ffff", "cdddddeddeedde$isInterrupted")
             if (!isInterrupted) newServerDetectedLiveData.postValue(Host(name, timeBound, socket))
         }catch (e: IOException){
             e.printStackTrace()
@@ -134,9 +128,6 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
 
     override fun interrupt() {
         isInterrupted = true
-//        for (i in hosts){
-//            i.socket.close()
-//        }
     }
 
     override fun getAllDetectedServers(): List<Host> {
