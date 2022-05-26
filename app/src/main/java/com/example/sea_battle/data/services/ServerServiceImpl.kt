@@ -24,7 +24,7 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
     private val verifiedClients = mutableListOf<Socket>()
     private var isInterrupted = false
 
-    override fun startServer(name: String, timeBound: Int) {
+    override fun startServer(name: String, timeBound: Int, isPublic: Boolean, password: String?) {
         var port = START_PORT
         while (!isInterrupted) {
             val serverSocket = ServerSocket(port, 0, ClientServiceImpl.getCurrentIp())
@@ -34,7 +34,7 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
                     soTimeout = 3000 }.accept()
 
                 Thread{
-                    if (verifyUser(name, timeBound, socket)) {
+                    if (verifyUser(name, timeBound, isPublic, password, socket)) {
                         synchronized(verifiedClients){
                             verifiedClients.add(socket)
                         }
@@ -54,17 +54,21 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
         }
     }
 
-    override fun verifyUser(name: String, timeBound: Int, socket: Socket): Boolean {
+    override fun verifyUser(name: String, timeBound: Int, isPublic: Boolean, password: String?, socket: Socket): Boolean {
         try {
-            val bufferedWriter = SpecialBufferedWriter(socket.getOutputStream())
-            val bufferedReader = SpecialBufferedReader(socket.getInputStream())
+            val bufferedWriter = SpecialBufferedWriter(socket)
+            val bufferedReader = SpecialBufferedReader(socket)
             bufferedWriter.writeString(BuildConfig.VERSION_CODE.toString())
             bufferedWriter.writeString(name)
-            bufferedWriter.writeStringAndFlush(timeBound.toString())
-            if (bufferedReader.readString() != BuildConfig.VERSION_CODE.toString()) {
+            bufferedWriter.writeString(timeBound.toString())
+            bufferedWriter.writeStringAndFlush(isPublic.toString())
+            if (!isPublic){
+                bufferedWriter.writeStringAndFlush(password!!)
+            }
+            if (bufferedReader.readString(3000) != BuildConfig.VERSION_CODE.toString()) {
                 return false
             }
-            val clientName = bufferedReader.readString()
+            val clientName = bufferedReader.readString(3000)
             Thread(PrepareClient(Client(clientName, socket))).start()
         } catch (e: IOException) {
             e.printStackTrace()
@@ -77,13 +81,17 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
     }
     private inner class PrepareClient(private val client: Client): Runnable{
         override fun run() {
-            val bufferedReader = SpecialBufferedReader(client.socket.getInputStream())
-            val bufferedWriter = SpecialBufferedWriter(client.socket.getOutputStream())
-            if (bufferedReader.readString() == "start"){
-                if (!isInterrupted) clientJoinedLiveData.postValue(client)
-                interrupt()
+            try {
+                val bufferedReader = SpecialBufferedReader(client.socket)
+                val bufferedWriter = SpecialBufferedWriter(client.socket)
+                if (bufferedReader.readString() == "start"){
+                    if (!isInterrupted) clientJoinedLiveData.postValue(client)
+                    interrupt()
+                }
+                bufferedWriter.writeStringAndFlush("start")
+            }catch (e: IOException){
+                e.printStackTrace()
             }
-            bufferedWriter.writeStringAndFlush("start")
         }
 
     }

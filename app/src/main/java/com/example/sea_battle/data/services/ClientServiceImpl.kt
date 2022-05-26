@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.sea_battle.BuildConfig
 import com.example.sea_battle.entities.Host
+import com.example.sea_battle.entities.SocketIsNotConnectedException
 import com.example.sea_battle.entities.SpecialBufferedReader
 import com.example.sea_battle.entities.SpecialBufferedWriter
 import java.io.IOException
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class ClientServiceImpl @Inject constructor() : ClientService() {
 
     companion object{
-        private const val START_PORT = 5000;
+        private const val START_PORT = 5000
+        val serverIsNotAvailableLiveData = MutableLiveData<Host>()
         fun getCurrentIp(): InetAddress? {
             try {
                 val networkInterfaces: Enumeration<NetworkInterface> =
@@ -42,6 +44,19 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
                 e.printStackTrace()
             }
             return null
+        }
+        fun notifyClientJoinedGame(host: Host): Boolean{
+            return try {
+                val bufferedWriter = SpecialBufferedWriter(host.socket)
+                val bufferedReader = SpecialBufferedReader(host.socket)
+                bufferedWriter.writeStringAndFlush("start")
+                bufferedReader.readString(500)
+                true
+            }catch (e: SocketIsNotConnectedException){
+                e.printStackTrace()
+                serverIsNotAvailableLiveData.postValue(host)
+                false
+            }
         }
     }
 
@@ -108,17 +123,22 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
 
     override fun verifyServer(clientName: String, socket: Socket): Boolean {
         try {
-            val bufferedReader = SpecialBufferedReader(socket.getInputStream())
-            val str = bufferedReader.readString()
+            val bufferedReader = SpecialBufferedReader(socket)
+            val str = bufferedReader.readString(3000)
             if (str != BuildConfig.VERSION_CODE.toString()) {
                 return false
             }
-            val name = bufferedReader.readString()
-            val timeBound = bufferedReader.readString().toInt()
-            val bufferedWriter = SpecialBufferedWriter(socket.getOutputStream())
+            val name = bufferedReader.readString(3000)
+            val timeBound = bufferedReader.readString(3000).toInt()
+            val isPublic = bufferedReader.readString(3000).toBoolean()
+            var password: String? = null
+            if (!isPublic){
+                password = bufferedReader.readString(3000)
+            }
+            val bufferedWriter = SpecialBufferedWriter(socket)
             bufferedWriter.writeString(BuildConfig.VERSION_CODE.toString())
             bufferedWriter.writeString(clientName)
-            if (!isInterrupted) newServerDetectedLiveData.postValue(Host(name, timeBound, socket))
+            if (!isInterrupted) newServerDetectedLiveData.postValue(Host(name, timeBound, isPublic, password, socket))
         }catch (e: IOException){
             e.printStackTrace()
             return false

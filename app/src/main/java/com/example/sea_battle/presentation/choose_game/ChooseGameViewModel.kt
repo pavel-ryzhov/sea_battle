@@ -15,7 +15,7 @@ class ChooseGameViewModel @Inject constructor(private val clientService: ClientS
 
     fun findServers(clientName: String){
         viewModelScope.launch(Dispatchers.IO){
-            clientService.findServers(clientName, 100, 10)
+            clientService.findServers(clientName, 200, 10)
         }
     }
     fun interrupt(){

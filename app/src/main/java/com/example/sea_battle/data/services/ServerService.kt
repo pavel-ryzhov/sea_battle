@@ -11,7 +11,7 @@ abstract class ServerService{
     abstract val clientJoinedLiveData: MutableLiveData<Client>
 
     abstract fun interrupt()
-    abstract fun startServer(name: String, timeBound: Int)
+    abstract fun startServer(name: String, timeBound: Int, isPublic: Boolean, password: String?)
 
-    protected abstract fun verifyUser(name: String, timeBound: Int, socket: Socket) : Boolean
+    protected abstract fun verifyUser(name: String, timeBound: Int, isPublic: Boolean, password: String?, socket: Socket) : Boolean
 }

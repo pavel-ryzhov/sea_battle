@@ -5,6 +5,7 @@
 
     <string name="back">Back</string>
     <string name="next">Next</string>
+    <string name="ready">Ready</string>
 
     <string name="wait_until_another_player_joins">Wait until another player joins</string>
 
@@ -13,6 +14,26 @@
     <string name="time">Enter time in seconds</string>
 
     <string name="wrong_time">Wrong time!</string>
+
+    <string name="choose_game_type">Choose game type:</string>
+
+    <string name="type_public">public</string>
+    <string name="type_private">private</string>
+
+    <string name="enter_password">Enter password</string>
+
+    <string name="password">Password</string>
+
+    <string name="wrong_password">Wrong password!</string>
+
+    <string name="enter_password_1">Enter password:</string>
+
+    <string name="host">Host:</string>
+    <string name="time_for_turn">Time for turn: </string>
+    <string name="type">Type:</string>
+    <string name="secs">secs</string>
+
+    <string name="password_is_blank">Password is blank!</string>
 
 <!--    <string-array name="time_bounds">-->
 <!--        <item>5 sec</item>-->

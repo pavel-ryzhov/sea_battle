@@ -1,24 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relativeLayout"
     android:layout_width="match_parent"
-    android:layout_marginVertical="8dp"
+    android:layout_margin="8dp"
+    android:background="@drawable/rounded_background"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools">
 
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/hostName"
+        android:id="@+id/textViewHostName"
         android:textSize="20sp"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginTop="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/textColor"
-        tools:text="edededede"/>
+        tools:text="Host: edededede"/>
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/timeBound"
-        android:layout_below="@id/hostName"
+        android:id="@+id/textViewTimeBound"
+        android:layout_below="@id/textViewHostName"
         android:textSize="20sp"
+        android:layout_marginHorizontal="8dp"
         android:layout_width="match_parent"
         android:textColor="@color/textColor"
-        tools:text="edededede"
+        tools:text="Time for turn: 333 secs"
+        android:layout_height="wrap_content"/>
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_marginBottom="4dp"
+        android:id="@+id/textViewGameType"
+        android:layout_below="@id/textViewTimeBound"
+        android:textSize="20sp"
+        android:layout_marginHorizontal="8dp"
+        android:layout_width="match_parent"
+        android:textColor="@color/textColor"
+        tools:text="Type: public"
         android:layout_height="wrap_content"/>
 
 </RelativeLayout>

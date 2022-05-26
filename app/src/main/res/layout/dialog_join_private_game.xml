@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/filled_background"
+    android:paddingHorizontal="8dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textViewEnterPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="8dp"
+        android:gravity="center"
+        android:text="@string/enter_password_1"
+        android:textColor="@color/textColor"
+        android:textSize="20sp" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutPassword"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textViewEnterPassword">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            android:inputType="textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textInputLayoutPassword"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="2dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="1"
+            android:text="@android:string/cancel" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonOk"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_weight="1"
+            android:text="@android:string/ok" />
+    </LinearLayout>
+
+
+</RelativeLayout>

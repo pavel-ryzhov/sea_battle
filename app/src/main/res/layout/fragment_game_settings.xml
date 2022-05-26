@@ -5,10 +5,10 @@
     android:layout_height="match_parent">
 
     <com.google.android.material.textview.MaterialTextView
-        android:layout_marginTop="24dp"
         android:id="@+id/textViewEnterTimeBound"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:text="@string/enter_time_bound"
         android:textColor="@color/textColor"
         android:textSize="20sp"
@@ -27,13 +27,73 @@
         app:layout_constraintTop_toBottomOf="@+id/textViewEnterTimeBound">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:inputType="number"
             android:id="@+id/editTextTimeBound"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/time"
+            android:inputType="number"
             android:textSize="20sp" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textViewChooseGameType"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/choose_game_type"
+        android:textColor="@color/textColor"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/textViewEnterTimeBound"
+        app:layout_constraintStart_toStartOf="@+id/textViewEnterTimeBound"
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="@+id/textViewEnterTimeBound"
+        app:layout_constraintTop_toBottomOf="@id/textViewChooseGameType">
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radioButtonTypePublic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/type_public"
+            android:textColor="@color/textColor"
+            android:textSize="16sp"
+            android:theme="@style/MyRadioButton" />
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radioButtonTypePrivate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/type_private"
+            android:textColor="@color/textColor"
+            android:textSize="16sp"
+            android:theme="@style/MyRadioButton" />
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutPassword"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/textViewEnterTimeBound"
+        app:layout_constraintStart_toStartOf="@+id/textViewEnterTimeBound"
+        app:layout_constraintTop_toBottomOf="@id/radioGroup">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_password"
+            android:inputType="textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"

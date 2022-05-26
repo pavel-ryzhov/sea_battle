@@ -13,30 +13,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonBack"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1"
-            android:text="@string/back" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonNext"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:text="@string/next" />
-    </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayoutLoading"
@@ -67,5 +43,30 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.5" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonBack"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:text="@string/back" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonReady"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="@string/ready" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

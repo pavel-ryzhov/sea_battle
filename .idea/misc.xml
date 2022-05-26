@@ -8,9 +8,13 @@
         <entry key="..\:/Programming/projects/mafia/app/src/main/res/layout/fragment_auth.xml" value="0.4041666666666667" />
         <entry key="..\:/Programming/projects/mafia/app/src/main/res/layout/fragment_general.xml" value="0.4041666666666667" />
         <entry key="..\:/Programming/projects/mafia/app/src/main/res/layout/fragment_rules.xml" value="0.3738532110091743" />
+        <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/drawable-v24/filled_rounded_background.xml" value="0.249" />
+        <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/drawable/filled_background.xml" value="0.249" />
+        <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/drawable/rounded_background.xml" value="0.249" />
+        <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/layout/dialog_join_private_game.xml" value="0.3317657118426678" />
         <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/layout/fragment_auth.xml" value="0.21354166666666666" />
         <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/layout/fragment_choose_game.xml" value="0.4" />
-        <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/layout/fragment_game_settings.xml" value="0.39794871794871794" />
+        <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/layout/fragment_game_settings.xml" value="0.4" />
         <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/layout/fragment_general.xml" value="0.4041666666666667" />
         <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/layout/fragment_playground.xml" value="0.4041666666666667" />
         <entry key="..\:/Programming/projects/sea_battle/app/src/main/res/layout/fragment_rules.xml" value="0.4041666666666667" />

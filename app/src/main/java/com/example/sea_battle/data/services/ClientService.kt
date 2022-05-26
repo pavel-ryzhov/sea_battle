@@ -7,6 +7,7 @@ import javax.inject.Inject
 
 abstract class ClientService{
     abstract val newServerDetectedLiveData: MutableLiveData<Host>
+//    abstract val serverIsNotAvailableLiveData: MutableLiveData<Host>
     abstract val netScanned: MutableLiveData<Unit>
 
     abstract fun findServers(clientName: String, nThreads: Int, nPorts: Int)

@@ -5,17 +5,24 @@ import com.example.sea_battle.extensions.StringExtensions.Companion.removeGrids
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.net.Socket
+import java.net.SocketTimeoutException
 
-class SpecialBufferedReader(inputStream: InputStream) {
-    private val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-    fun readString() : String{
-        val chars = mutableListOf<Char>()
-        while (!chars.endsWithString("###")){
-            chars.add(bufferedReader.read().toChar())
+class SpecialBufferedReader(private val socket: Socket) {
+    private val bufferedReader = BufferedReader(InputStreamReader(socket.getInputStream()))
+    fun readString(timeout: Int = 0) : String{
+        try{
+            val chars = mutableListOf<Char>()
+            while (!chars.endsWithString("###")) {
+                socket.soTimeout = timeout
+                chars.add(bufferedReader.read().toChar())
+            }
+            return String(chars.toCharArray()).removeGrids()
+        }catch(e: SocketTimeoutException){
+            throw SocketIsNotConnectedException()
         }
-        return String(chars.toCharArray()).removeGrids()
     }
-    fun readBytes(): ByteArray{
-        return readString().toByteArray()
+    fun readBytes(timeout: Int = 0): ByteArray{
+        return readString(timeout).toByteArray()
     }
 }

@@ -1,5 +1,6 @@
 package com.example.sea_battle.presentation.choose_game
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -9,7 +10,7 @@ import com.example.sea_battle.databinding.ItemLoadingServersRecyclerAdapterBindi
 import com.example.sea_battle.databinding.ItemServerServersRecyclerAdapterBinding
 import com.example.sea_battle.entities.Host
 
-class ServersRecyclerAdapter : RecyclerView.Adapter<ServersRecyclerAdapter.RecyclerViewHolder>() {
+class ServersRecyclerAdapter(private val onItemClick: (host: Host) -> Unit) : RecyclerView.Adapter<ServersRecyclerAdapter.RecyclerViewHolder>() {
 
     private val hosts = mutableListOf<Host>()
 
@@ -42,12 +43,19 @@ class ServersRecyclerAdapter : RecyclerView.Adapter<ServersRecyclerAdapter.Recyc
         return hosts.size + 1
     }
 
-    class RecyclerViewHolder(private val binding: ViewBinding): RecyclerView.ViewHolder(binding.root){
+    inner class RecyclerViewHolder(private val binding: ViewBinding): RecyclerView.ViewHolder(binding.root){
+        @SuppressLint("SetTextI18n")
         fun fillServerItem(host: Host){
             if (binding is ItemServerServersRecyclerAdapterBinding){
                 binding.apply {
-                    hostName.text = host.name
-                    timeBound.text = host.timeBound.toString()
+                    root.resources.let { resources ->
+                        textViewHostName.text = resources.getString(R.string.host) + " " + host.name
+                        textViewTimeBound.text = resources.getString(R.string.time_for_turn) + " " + host.timeBound.toString() + " " + resources.getString(R.string.secs)
+                        textViewGameType.text = resources.getString(R.string.type) + " " + resources.getString(if (host.isPublic) R.string.type_public else R.string.type_private)
+                    }
+                    relativeLayout.setOnClickListener {
+                        onItemClick(host)
+                    }
                 }
             }
         }
