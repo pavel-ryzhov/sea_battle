@@ -5,10 +5,12 @@ import com.example.sea_battle.navigation.Navigator
 import com.example.sea_battle.navigation.NavigatorImpl
 import com.example.sea_battle.data.preferences.AppPreferences
 import com.example.sea_battle.data.preferences.AppPreferencesImpl
-import com.example.sea_battle.data.services.ClientService
-import com.example.sea_battle.data.services.ClientServiceImpl
-import com.example.sea_battle.data.services.ServerService
-import com.example.sea_battle.data.services.ServerServiceImpl
+import com.example.sea_battle.data.services.client.ClientService
+import com.example.sea_battle.data.services.client.ClientServiceImpl
+import com.example.sea_battle.data.services.game.GameService
+import com.example.sea_battle.data.services.game.GameServiceImpl
+import com.example.sea_battle.data.services.server.ServerService
+import com.example.sea_battle.data.services.server.ServerServiceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -47,4 +49,8 @@ abstract class BindsModule {
     abstract fun bindsClientService(
         clientServiceImpl: ClientServiceImpl
     ): ClientService
+    @Binds
+    abstract fun bindsGameService(
+        gameServiceImpl: GameServiceImpl
+    ): GameService
 }

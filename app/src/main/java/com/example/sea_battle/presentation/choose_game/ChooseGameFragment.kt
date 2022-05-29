@@ -4,21 +4,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
-import com.example.sea_battle.data.services.ClientServiceImpl
+import com.example.sea_battle.MainActivity
+import com.example.sea_battle.R
+import com.example.sea_battle.data.services.client.ClientServiceImpl
 import com.example.sea_battle.databinding.FragmentChooseGameBinding
 import com.example.sea_battle.entities.Host
 import com.example.sea_battle.navigation.Navigator
+import com.example.sea_battle.presentation.dialogs.JoinPrivateGameDialog
+import com.example.sea_battle.presentation.dialogs.InfoDialog
 import com.example.sea_battle.presentation.start_game.StartGameFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.net.Socket
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -55,12 +56,12 @@ class ChooseGameFragment : Fragment(){
             newServerDetectedLiveData.observe(viewLifecycleOwner){
                 recyclerAdapter.addItem(it)
             }
-            netScanned.observe(viewLifecycleOwner){
-
+            serverIsNotAvailableLiveData.observe(viewLifecycleOwner){
+                InfoDialog(requireContext(), resources.getString(R.string.server_is_not_available)){
+                    recyclerAdapter.removeItem(it)
+                    (requireActivity() as MainActivity).hideSystemUI()
+                }.show()
             }
-        }
-        ClientServiceImpl.serverIsNotAvailableLiveData.observe(viewLifecycleOwner){
-            Toast.makeText(context, "server is not available", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -70,14 +71,20 @@ class ChooseGameFragment : Fragment(){
     }
 
     private fun onRecyclerAdapterItemClick(host: Host){
-        CoroutineScope(Dispatchers.IO + job).launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.Main + job).launch(Dispatchers.Main) {
             if (!host.isPublic){
-                JoinPrivateGameDialog(requireContext(), navigator, host).show()
+                JoinPrivateGameDialog(requireContext(), navigator, viewModel, host).show()
             }else {
-                if (ClientServiceImpl.notifyClientJoinedGame(host))
-                    navigator.openFragment(StartGameFragment().also { it.setHost(host) }, Bundle(), true)
-                else
-                    ClientServiceImpl.serverIsNotAvailableLiveData.postValue(host)
+                CoroutineScope(Dispatchers.IO + job).launch(Dispatchers.IO) {
+                    if (viewModel.notifyClientJoinedGame(host)) {
+                        navigator.openFragment(
+                            StartGameFragment().also { it.setHost(host) },
+                            Bundle(),
+                            true
+                        )
+                    } else
+                        viewModel.serverIsNotAvailableLiveData.postValue(host)
+                }
             }
         }
     }

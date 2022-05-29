@@ -11,7 +11,7 @@ import com.example.sea_battle.presentation.auth.AuthFragment
 import com.example.sea_battle.presentation.general.GeneralFragment
 import com.example.sea_battle.navigation.Navigator
 import com.example.sea_battle.data.preferences.AppPreferences
-import com.example.sea_battle.presentation.choose_game.JoinPrivateGameDialog
+import com.example.sea_battle.presentation.playground.PlaygroundFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.net.InetAddress
 import java.net.UnknownHostException
@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         val name = appPreferences.getName()
 
         navigator.openFragment(if (name == null) AuthFragment() else GeneralFragment().apply { arguments = Bundle().apply { putString("name", name) } },  true)
+//        navigator.openFragment(PlaygroundFragment(), true)
     }
 
     override fun onBackPressed() {

@@ -59,7 +59,7 @@
             android:padding="16dp"
             android:text="Правила"
             android:textAllCaps="false"
-            android:textColor="@color/textColor"
+            android:textColor="@color/foregroundColor"
             android:textSize="20sp"
             tools:ignore="UnusedAttribute" />
 
@@ -73,7 +73,7 @@
             android:padding="16dp"
             android:text="Создать игру"
             android:textAllCaps="false"
-            android:textColor="@color/textColor"
+            android:textColor="@color/foregroundColor"
             android:textSize="20sp"
             tools:ignore="UnusedAttribute" />
 
@@ -87,7 +87,7 @@
             android:padding="16dp"
             android:text="Присоединиться к игре"
             android:textAllCaps="false"
-            android:textColor="@color/textColor"
+            android:textColor="@color/foregroundColor"
             android:textSize="20sp"
             tools:ignore="UnusedAttribute" />
 
@@ -101,7 +101,7 @@
             android:padding="16dp"
             android:text="Настройки"
             android:textAllCaps="false"
-            android:textColor="@color/textColor"
+            android:textColor="@color/foregroundColor"
             android:textSize="20sp"
             tools:ignore="UnusedAttribute" />
     </LinearLayout>

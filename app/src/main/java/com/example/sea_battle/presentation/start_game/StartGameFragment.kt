@@ -1,6 +1,7 @@
 package com.example.sea_battle.presentation.start_game
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import com.example.sea_battle.databinding.FragmentStartGameBinding
 import com.example.sea_battle.entities.Client
 import com.example.sea_battle.entities.Host
 import com.example.sea_battle.navigation.Navigator
+import com.example.sea_battle.presentation.playground.PlaygroundFragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -26,12 +28,14 @@ class StartGameFragment : Fragment() {
     private lateinit var client: Client
     private val viewModel: StartGameViewModel by viewModels()
     private var isHost = false
+    private var needToCloseSocketOnExit = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        needToCloseSocketOnExit = true
         binding = FragmentStartGameBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -50,38 +54,59 @@ class StartGameFragment : Fragment() {
                     it.getBoolean("isPublic", true),
                     it.getString("password")
                 )
-                setEnabled(false)
-            }else{
-                binding.constraintLayoutLoading.visibility = View.GONE
             }
         }
+        setEnabled(false)
 
         binding.apply {
             buttonBack.setOnClickListener {
                 requireActivity().onBackPressed()
             }
             buttonReady.setOnClickListener {
-
+                viewModel.checkIfUserIsReady(binding.field.ships)
             }
         }
 
-        if (!isHost){
+        if (!isHost) {
             start()
         }
     }
 
-    private fun start(){
+    private fun start() {
         setEnabled(true)
     }
 
-    fun setHost(host: Host){
+    fun setHost(host: Host) {
         this.host = host
     }
 
     private fun subscribeOnLiveData() {
-        viewModel.clientJoinedLiveData.observe(viewLifecycleOwner) {
-            client = it
-            start()
+        viewModel.apply {
+            clientJoinedLiveData.observe(viewLifecycleOwner) {
+                client = it
+                start()
+            }
+            userIsReadyLiveData.observe(viewLifecycleOwner) {
+                if (it) {
+                    needToCloseSocketOnExit = false
+                    navigator.openFragment(PlaygroundFragment().apply {
+                        otherPlayerSocket =
+                            if (!isHost) this@StartGameFragment.host.socket else client.socket
+                        otherPlayerName =
+                            if (!isHost) this@StartGameFragment.host.name else client.name
+                    }, Bundle().apply {
+                        putInt("timeBound", requireArguments().getInt("timeBound"))
+                    }, true)
+                    viewModel.setOtherPlayer(if (!isHost) this@StartGameFragment.host.socket else client.socket)
+                    viewModel.notifyThisPlayerIsReadyToStart(binding.field.ships)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        resources.getString(R.string.not_all_ships_are_arranged),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
         }
     }
 
@@ -89,11 +114,12 @@ class StartGameFragment : Fragment() {
         binding.apply {
             field.isEnabled = enabled
             buttonReady.isEnabled = enabled
+            constraintLayoutLoading.visibility = if (enabled) View.GONE else View.VISIBLE
         }
     }
 
     override fun onStop() {
-        viewModel.interrupt()
+        if (needToCloseSocketOnExit) viewModel.close()
         super.onStop()
     }
 }

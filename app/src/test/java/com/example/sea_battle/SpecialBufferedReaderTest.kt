@@ -1,6 +1,6 @@
 package com.example.sea_battle
 
-import com.example.sea_battle.entities.SpecialBufferedReader
+import com.example.sea_battle.utils.SpecialBufferedReader
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.ByteArrayInputStream

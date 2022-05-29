@@ -1,4 +1,4 @@
-package com.example.sea_battle.entities
+package com.example.sea_battle.utils
 
 import java.io.IOException
 

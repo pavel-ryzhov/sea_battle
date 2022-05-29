@@ -8,6 +8,7 @@
     <string name="ready">Ready</string>
 
     <string name="wait_until_another_player_joins">Wait until another player joins</string>
+    <string name="wait_until_another_player_is_ready">Wait until another player is ready</string>
 
     <string name="enter_time_bound">Choose the time allotted for the turn:</string>
 
@@ -35,20 +36,12 @@
 
     <string name="password_is_blank">Password is blank!</string>
 
-<!--    <string-array name="time_bounds">-->
-<!--        <item>5 sec</item>-->
-<!--        <item>10 sec</item>-->
-<!--        <item>15 sec</item>-->
-<!--        <item>20 sec</item>-->
-<!--        <item>25 sec</item>-->
-<!--        <item>30 sec</item>-->
-<!--        <item>35 sec</item>-->
-<!--        <item>40 sec</item>-->
-<!--        <item>45 sec</item>-->
-<!--        <item>50 sec</item>-->
-<!--        <item>55 sec</item>-->
-<!--        <item>60 sec</item>-->
-<!--    </string-array>-->
+    <string name="server_is_not_available">Server is not available!</string>
+
+    <string name="not_all_ships_are_arranged">Not all ships are arranged!</string>
+
+    <string name="your_field">Your field:</string>
+
 
     <string-array name="coords">
         <item>A</item>

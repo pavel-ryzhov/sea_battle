@@ -41,17 +41,17 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
     private var numberOfShipsLocated3 = 0
     private var numberOfShipsLocated4 = 0
     private var rotatedShips = true
-    private val ships: MutableList<Ship> = mutableListOf()
+    val ships: MutableList<Ship> = mutableListOf()
 
     init {
-        setOnClickListener {
-            val coords = getCoordsByLocation(locationX, locationY)
-            getShipByCoords(coords[0], coords[1])?.let {
-                val ship = Ship(it.x, it.y, it.type, !it.rotate)
-                ships.remove(it)
-                ships.add(if (checkShip(ship)) ship else it)
-            }
-        }
+//        setOnClickListener {
+//            val coords = getCoordsByLocation(locationX, locationY)
+//            getShipByCoords(coords[0], coords[1])?.let {
+//                val ship = Ship(it.x, it.y, it.type, !it.rotate)
+//                ships.remove(it)
+//                ships.add(if (checkShip(ship)) ship else it)
+//            }
+//        }
         setOnTouchListener { _, motionEvent ->
             when (motionEvent.action) {
                 ACTION_DOWN -> {
@@ -102,7 +102,7 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                             }
                         }
                     }
-                    if (dragStartedX > marginX + cellWidth * 9 && dragStartedX < marginX + cellWidth * 10.5f && dragStartedY > marginY + cellWidth * 12 + 10 && dragStartedY < marginY + cellWidth * 13.5f + 10){
+                    if (dragStartedX > marginX + cellWidth * 9 && dragStartedX < marginX + cellWidth * 10.5f && dragStartedY > marginY + cellWidth * 12 + 10 && dragStartedY < marginY + cellWidth * 13.5f + 10) {
                         rotatedShips = !rotatedShips
                     }
                 }
@@ -152,7 +152,8 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                             }
                         }
                         DRAG_ROTATED_SHIP_4 -> {
-                            val coords = getCoordsByLocation(locationX, locationY - 1.5f * cellWidth)
+                            val coords =
+                                getCoordsByLocation(locationX, locationY - 1.5f * cellWidth)
                             if (coords[0] != -1 && coords[1] != -1) {
                                 val ship = Ship(coords[0], coords[1], 4, true)
                                 if (checkShip(ship)) {
@@ -172,7 +173,8 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                             }
                         }
                         DRAG_ROTATED_SHIP_2 -> {
-                            val coords = getCoordsByLocation(locationX, locationY - 0.5f * cellWidth)
+                            val coords =
+                                getCoordsByLocation(locationX, locationY - 0.5f * cellWidth)
                             if (coords[0] != -1 && coords[1] != -1) {
                                 val ship = Ship(coords[0], coords[1], 2, true)
                                 if (checkShip(ship)) {
@@ -285,11 +287,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                 marginY + 11 * cellWidth,
                 paint.apply {
                     strokeWidth = 5f
-                    color = ContextCompat.getColor(context, R.color.textColor)
+                    color = ContextCompat.getColor(context, R.color.foregroundColor)
                     style = Paint.Style.STROKE
                 })
             paint.apply {
-                color = ContextCompat.getColor(context, R.color.textColor)
+                color = ContextCompat.getColor(context, R.color.foregroundColor)
                 style = Paint.Style.FILL
                 textSize = cellWidth - 6
             }
@@ -335,7 +337,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                     marginX + cellWidth * 2,
                     marginY + cellWidth * 16 + 10,
                     paint.apply {
-                        color = if (numberOfShipsLocated4 == 1) Color.GRAY else ContextCompat.getColor(context, R.color.textColor)
+                        color =
+                            if (numberOfShipsLocated4 == 1) Color.GRAY else ContextCompat.getColor(
+                                context,
+                                R.color.foregroundColor
+                            )
                     })
 
                 it.drawRect(
@@ -344,7 +350,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                     marginX + cellWidth * 4,
                     marginY + cellWidth * 15 + 10,
                     paint.apply {
-                        color = if (numberOfShipsLocated3 == 2) Color.GRAY else ContextCompat.getColor(context, R.color.textColor)
+                        color =
+                            if (numberOfShipsLocated3 == 2) Color.GRAY else ContextCompat.getColor(
+                                context,
+                                R.color.foregroundColor
+                            )
                     })
 
                 it.drawRect(
@@ -353,7 +363,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                     marginX + cellWidth * 6,
                     marginY + cellWidth * 14 + 10,
                     paint.apply {
-                        color = if (numberOfShipsLocated2 == 3) Color.GRAY else ContextCompat.getColor(context, R.color.textColor)
+                        color =
+                            if (numberOfShipsLocated2 == 3) Color.GRAY else ContextCompat.getColor(
+                                context,
+                                R.color.foregroundColor
+                            )
                     })
 
                 it.drawRect(
@@ -362,7 +376,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                     marginX + cellWidth * 8,
                     marginY + cellWidth * 13 + 10,
                     paint.apply {
-                        color = if (numberOfShipsLocated1 == 4) Color.GRAY else ContextCompat.getColor(context, R.color.textColor)
+                        color =
+                            if (numberOfShipsLocated1 == 4) Color.GRAY else ContextCompat.getColor(
+                                context,
+                                R.color.foregroundColor
+                            )
                     })
             } else {
                 it.drawRect(
@@ -371,7 +389,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                     marginX + 5 * cellWidth,
                     marginY + cellWidth * 13 + 10,
                     paint.apply {
-                        color = if (numberOfShipsLocated4 == 1) Color.GRAY else ContextCompat.getColor(context, R.color.textColor)
+                        color =
+                            if (numberOfShipsLocated4 == 1) Color.GRAY else ContextCompat.getColor(
+                                context,
+                                R.color.foregroundColor
+                            )
                     })
 
                 it.drawRect(
@@ -380,7 +402,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                     marginX + 4 * cellWidth,
                     marginY + cellWidth * 15 + 10,
                     paint.apply {
-                        color = if (numberOfShipsLocated3 == 2) Color.GRAY else ContextCompat.getColor(context, R.color.textColor)
+                        color =
+                            if (numberOfShipsLocated3 == 2) Color.GRAY else ContextCompat.getColor(
+                                context,
+                                R.color.foregroundColor
+                            )
                     })
 
                 it.drawRect(
@@ -389,7 +415,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                     marginX + 7 * cellWidth,
                     marginY + cellWidth * 13 + 10,
                     paint.apply {
-                        color = if (numberOfShipsLocated1 == 4) Color.GRAY else ContextCompat.getColor(context, R.color.textColor)
+                        color =
+                            if (numberOfShipsLocated1 == 4) Color.GRAY else ContextCompat.getColor(
+                                context,
+                                R.color.foregroundColor
+                            )
                     })
 
                 it.drawRect(
@@ -398,7 +428,11 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
                     marginX + 7 * cellWidth,
                     marginY + cellWidth * 15 + 10,
                     paint.apply {
-                        color = if (numberOfShipsLocated2 == 3) Color.GRAY else ContextCompat.getColor(context, R.color.textColor)
+                        color =
+                            if (numberOfShipsLocated2 == 3) Color.GRAY else ContextCompat.getColor(
+                                context,
+                                R.color.foregroundColor
+                            )
                     })
             }
 
@@ -416,7 +450,7 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
 
 
             paint.apply {
-                color = ContextCompat.getColor(context, R.color.textColor)
+                color = ContextCompat.getColor(context, R.color.foregroundColor)
                 style = Paint.Style.FILL
             }
 

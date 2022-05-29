@@ -1,12 +1,11 @@
-package com.example.sea_battle.data.services
+package com.example.sea_battle.data.services.client
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.sea_battle.BuildConfig
 import com.example.sea_battle.entities.Host
-import com.example.sea_battle.entities.SocketIsNotConnectedException
-import com.example.sea_battle.entities.SpecialBufferedReader
-import com.example.sea_battle.entities.SpecialBufferedWriter
+import com.example.sea_battle.utils.SocketIsNotConnectedException
+import com.example.sea_battle.utils.SpecialBufferedReader
+import com.example.sea_battle.utils.SpecialBufferedWriter
 import java.io.IOException
 import java.net.*
 import java.util.*
@@ -22,7 +21,6 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
 
     companion object{
         private const val START_PORT = 5000
-        val serverIsNotAvailableLiveData = MutableLiveData<Host>()
         fun getCurrentIp(): InetAddress? {
             try {
                 val networkInterfaces: Enumeration<NetworkInterface> =
@@ -45,21 +43,23 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
             }
             return null
         }
-        fun notifyClientJoinedGame(host: Host): Boolean{
-            return try {
-                val bufferedWriter = SpecialBufferedWriter(host.socket)
-                val bufferedReader = SpecialBufferedReader(host.socket)
-                bufferedWriter.writeStringAndFlush("start")
-                bufferedReader.readString(500)
-                true
-            }catch (e: SocketIsNotConnectedException){
-                e.printStackTrace()
-                serverIsNotAvailableLiveData.postValue(host)
-                false
-            }
+
+    }
+
+    override fun notifyClientJoinedGame(host: Host): Boolean{
+        return try {
+            val bufferedWriter = SpecialBufferedWriter(host.socket)
+            val bufferedReader = SpecialBufferedReader(host.socket)
+            bufferedWriter.writeStringAndFlush("start")
+            bufferedReader.readString(1000) == "start"
+        }catch (e: SocketIsNotConnectedException){
+            e.printStackTrace()
+            serverIsNotAvailableLiveData.postValue(host)
+            false
         }
     }
 
+    override val serverIsNotAvailableLiveData = MutableLiveData<Host>()
     override val newServerDetectedLiveData = MutableLiveData<Host>()
     override val netScanned = MutableLiveData<Unit>()
 
@@ -124,8 +124,7 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
     override fun verifyServer(clientName: String, socket: Socket): Boolean {
         try {
             val bufferedReader = SpecialBufferedReader(socket)
-            val str = bufferedReader.readString(3000)
-            if (str != BuildConfig.VERSION_CODE.toString()) {
+            if (bufferedReader.readString(3000) != BuildConfig.VERSION_CODE.toString()) {
                 return false
             }
             val name = bufferedReader.readString(3000)
@@ -137,7 +136,7 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
             }
             val bufferedWriter = SpecialBufferedWriter(socket)
             bufferedWriter.writeString(BuildConfig.VERSION_CODE.toString())
-            bufferedWriter.writeString(clientName)
+            bufferedWriter.writeStringAndFlush(clientName)
             if (!isInterrupted) newServerDetectedLiveData.postValue(Host(name, timeBound, isPublic, password, socket))
         }catch (e: IOException){
             e.printStackTrace()
@@ -148,6 +147,11 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
 
     override fun interrupt() {
         isInterrupted = true
+    }
+
+    override fun close() {
+        interrupt()
+        hosts.forEach { it.socket.close() }
     }
 
     override fun getAllDetectedServers(): List<Host> {

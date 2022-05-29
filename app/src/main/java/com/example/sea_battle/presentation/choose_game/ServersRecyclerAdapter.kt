@@ -18,6 +18,10 @@ class ServersRecyclerAdapter(private val onItemClick: (host: Host) -> Unit) : Re
         hosts.add(host)
         notifyDataSetChanged()
     }
+    fun removeItem(host: Host){
+        hosts.remove(host)
+        notifyDataSetChanged()
+    }
 
     override fun getItemViewType(position: Int) = if (position < hosts.size) R.layout.item_server_servers_recycler_adapter else R.layout.item_loading_servers_recycler_adapter
 

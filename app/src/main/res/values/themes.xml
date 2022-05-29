@@ -15,10 +15,11 @@
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:fontFamily">@font/montserrat</item>
     </style>
 
     <style name="MyRadioButton" parent="Theme.AppCompat.Light">
-        <item name="colorControlNormal">@color/textColor</item>
-        <item name="colorControlActivated">@color/textColor</item>
+        <item name="colorControlNormal">@color/foregroundColor</item>
+        <item name="colorControlActivated">@color/foregroundColor</item>
     </style>
 </resources>

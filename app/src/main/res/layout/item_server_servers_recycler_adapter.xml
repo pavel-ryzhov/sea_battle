@@ -14,7 +14,7 @@
         android:layout_marginTop="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/textColor"
+        android:textColor="@color/foregroundColor"
         tools:text="Host: edededede"/>
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textViewTimeBound"
@@ -22,7 +22,7 @@
         android:textSize="20sp"
         android:layout_marginHorizontal="8dp"
         android:layout_width="match_parent"
-        android:textColor="@color/textColor"
+        android:textColor="@color/foregroundColor"
         tools:text="Time for turn: 333 secs"
         android:layout_height="wrap_content"/>
     <com.google.android.material.textview.MaterialTextView
@@ -32,7 +32,7 @@
         android:textSize="20sp"
         android:layout_marginHorizontal="8dp"
         android:layout_width="match_parent"
-        android:textColor="@color/textColor"
+        android:textColor="@color/foregroundColor"
         tools:text="Type: public"
         android:layout_height="wrap_content"/>
 

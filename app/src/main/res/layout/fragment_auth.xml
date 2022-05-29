@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_marginVertical="8dp"
         android:text="Введите имя"
-        android:textColor="@color/textColor"
+        android:textColor="@color/foregroundColor"
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/textViewNameInfo"

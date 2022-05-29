@@ -1,11 +1,12 @@
-package com.example.sea_battle.data.services
+package com.example.sea_battle.data.services.server
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.sea_battle.BuildConfig
+import com.example.sea_battle.data.services.client.ClientServiceImpl
 import com.example.sea_battle.entities.Client
-import com.example.sea_battle.entities.SpecialBufferedReader
-import com.example.sea_battle.entities.SpecialBufferedWriter
+import com.example.sea_battle.utils.SpecialBufferedReader
+import com.example.sea_battle.utils.SpecialBufferedWriter
 import java.io.IOException
 import java.net.BindException
 import java.net.ServerSocket
@@ -79,6 +80,12 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
     override fun interrupt() {
         isInterrupted = true
     }
+
+    override fun close() {
+        interrupt()
+        verifiedClients.forEach { it.close() }
+    }
+
     private inner class PrepareClient(private val client: Client): Runnable{
         override fun run() {
             try {
