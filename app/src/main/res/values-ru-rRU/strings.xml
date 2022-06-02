@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">морской бой</string>
+    <string name="incorrect_location">Неверная позиция!</string>
+    <string name="back">Назад</string>
+    <string name="next">Далее</string>
+    <string name="ready">Готово</string>
+    <string name="wait_until_another_player_joins">Подождите, пока другой игрок присоединится</string>
+    <string name="wait_until_another_player_is_ready">Подождите, пока другой игрок будет готов</string>
+    <string name="enter_time_bound">Выберите время, отведённое на один ход:</string>
+    <string name="time">Введите время в секундах</string>
+    <string name="wrong_time">Неверное значение!</string>
+    <string name="choose_game_type">Виберите тип игры:</string>
+    <string name="type_public">публичная</string>
+    <string name="type_private">приватная</string>
+    <string name="enter_password">Введите пароль</string>
+    <string name="password">Пароль</string>
+    <string name="wrong_password">Неверный пароль!</string>
+    <string name="enter_password_1">Введите пароль:</string>
+    <string name="host">Хост:</string>
+    <string name="time_for_turn">Время хода:</string>
+    <string name="type">Тип:</string>
+    <string name="secs">сек</string>
+    <string name="password_is_blank">Пароль пустой!</string>
+    <string name="server_is_not_available">Сервер не доступен!</string>
+    <string name="not_all_ships_are_arranged">Не все корабли расставлены!</string>
+    <string name="your_field">Ваше поле:</string>
+    <string name="name_can_contain_chars">Имя может содержать буквы, цифры и знаки подчеркивания</string>
+    <string name="enter_name">Введите имя</string>
+    <string name="name">Имя</string>
+    <string name="change">Изменить</string>
+    <string name="your_name">Ваше имя:</string>
+    <string name="rules">Правила</string>
+    <string name="create_game">Создать игру</string>
+    <string name="join_game">Присоединиться к игре</string>
+    <string name="settings">Настройки</string>
+
+    <string-array name="coords">
+        <item>А</item>
+        <item>Б</item>
+        <item>В</item>
+        <item>Г</item>
+        <item>Д</item>
+        <item>Е</item>
+        <item>Ж</item>
+        <item>З</item>
+        <item>И</item>
+        <item>К</item>
+    </string-array>
+</resources>

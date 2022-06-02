@@ -23,6 +23,7 @@
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textView"
             android:layout_width="256dp"
+            android:textStyle="bold"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:gravity="center"

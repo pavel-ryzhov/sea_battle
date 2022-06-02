@@ -74,6 +74,7 @@ class StartGameFragment : Fragment() {
 
     private fun start() {
         setEnabled(true)
+        viewModel.startListening(if (!isHost) this@StartGameFragment.host.socket else client.socket)
     }
 
     fun setHost(host: Host) {
@@ -92,10 +93,9 @@ class StartGameFragment : Fragment() {
                     navigator.openFragment(PlaygroundFragment().apply {
                         otherPlayerSocket =
                             if (!isHost) this@StartGameFragment.host.socket else client.socket
-                        otherPlayerName =
-                            if (!isHost) this@StartGameFragment.host.name else client.name
                     }, Bundle().apply {
-                        putInt("timeBound", requireArguments().getInt("timeBound"))
+                        putString("otherPlayerName", if (!isHost) this@StartGameFragment.host.name else client.name)
+                        putInt("timeBound", if (!isHost) host.timeBound else requireArguments().getInt("timeBound"))
                     }, true)
                     viewModel.setOtherPlayer(if (!isHost) this@StartGameFragment.host.socket else client.socket)
                     viewModel.notifyThisPlayerIsReadyToStart(binding.field.ships)

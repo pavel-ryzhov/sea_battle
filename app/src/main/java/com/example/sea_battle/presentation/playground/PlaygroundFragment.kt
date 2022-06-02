@@ -19,9 +19,9 @@ class PlaygroundFragment : Fragment() {
     @Inject
     lateinit var navigator: Navigator
     private lateinit var binding: FragmentPlaygroundBinding
-    lateinit var otherPlayerName: String
     lateinit var otherPlayerSocket: Socket
     private val viewModel: PlaygroundViewModel by viewModels()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,19 +29,31 @@ class PlaygroundFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPlaygroundBinding.inflate(inflater, container, false)
+        binding.playground.init(
+            requireArguments().getString("otherPlayerName", ""),
+            requireArguments().getInt("timeBound"),
+            viewModel.gameService
+        )
+        binding.playground.isEnabled = false
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        viewModel.startListening()
-
         subscribeOnLiveData()
     }
-    private fun subscribeOnLiveData(){
+
+    private fun subscribeOnLiveData() {
         viewModel.apply {
-            bothPlayersAreReadyLiveData.observe(viewLifecycleOwner){
-                binding.constraintLayoutLoading.visibility = View.GONE 
+            bothPlayersAreReadyLiveData.observe(viewLifecycleOwner) {
+                binding.apply {
+                    constraintLayoutLoading.visibility = View.GONE
+                    playground.apply {
+                        setFirstTurn(it)
+                        start()
+                        isEnabled = true
+                    }
+                }
             }
         }
     }

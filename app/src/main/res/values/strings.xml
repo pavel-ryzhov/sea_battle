@@ -1,47 +1,38 @@
 <resources>
     <string name="app_name">sea battle</string>
-
     <string name="incorrect_location">Incorrect location!</string>
-
     <string name="back">Back</string>
     <string name="next">Next</string>
     <string name="ready">Ready</string>
-
     <string name="wait_until_another_player_joins">Wait until another player joins</string>
     <string name="wait_until_another_player_is_ready">Wait until another player is ready</string>
-
     <string name="enter_time_bound">Choose the time allotted for the turn:</string>
-
     <string name="time">Enter time in seconds</string>
-
     <string name="wrong_time">Wrong time!</string>
-
     <string name="choose_game_type">Choose game type:</string>
-
     <string name="type_public">public</string>
     <string name="type_private">private</string>
-
     <string name="enter_password">Enter password</string>
-
     <string name="password">Password</string>
-
     <string name="wrong_password">Wrong password!</string>
-
     <string name="enter_password_1">Enter password:</string>
-
     <string name="host">Host:</string>
     <string name="time_for_turn">Time for turn: </string>
     <string name="type">Type:</string>
     <string name="secs">secs</string>
-
     <string name="password_is_blank">Password is blank!</string>
-
     <string name="server_is_not_available">Server is not available!</string>
-
     <string name="not_all_ships_are_arranged">Not all ships are arranged!</string>
-
     <string name="your_field">Your field:</string>
-
+    <string name="enter_name">Enter name</string>
+    <string name="name_can_contain_chars">Name can contain letters, numbers and underscopes</string>
+    <string name="name">Name</string>
+    <string name="change">Change</string>
+    <string name="your_name">Your name:</string>
+    <string name="rules">Rules</string>
+    <string name="create_game">Create game</string>
+    <string name="join_game">Join game</string>
+    <string name="settings">Settings</string>
 
     <string-array name="coords">
         <item>A</item>
@@ -55,5 +46,4 @@
         <item>I</item>
         <item>J</item>
     </string-array>
-
 </resources>

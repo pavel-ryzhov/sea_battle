@@ -13,7 +13,9 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketTimeoutException
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ServerServiceImpl @Inject constructor() : ServerService() {
 
     companion object {

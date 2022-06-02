@@ -9,15 +9,10 @@ import java.net.Socket
 import javax.inject.Inject
 
 @HiltViewModel
-class PlaygroundViewModel @Inject constructor(private val gameService: GameService) : ViewModel() {
+class PlaygroundViewModel @Inject constructor(val gameService: GameService) : ViewModel() {
 
     val bothPlayersAreReadyLiveData = gameService.bothPlayersAreReadyLiveData
 
-    fun startListening() {
-        viewModelScope.launch {
-            gameService.start()
-        }
-    }
     fun setOtherPlayer(socket: Socket){
         gameService.setOtherPlayer(socket)
     }

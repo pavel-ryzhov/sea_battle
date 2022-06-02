@@ -57,4 +57,10 @@ class StartGameViewModel @Inject constructor(
             userIsReadyLiveData.postValue(ships.size == 10)
         }
     }
+    fun startListening(socket: Socket){
+        viewModelScope.launch {
+            gameService.setOtherPlayer(socket)
+            gameService.start()
+        }
+    }
 }

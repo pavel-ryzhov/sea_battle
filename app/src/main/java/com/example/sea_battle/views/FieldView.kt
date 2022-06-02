@@ -44,14 +44,6 @@ class FieldView(context: Context, attributeSet: AttributeSet) : View(context, at
     val ships: MutableList<Ship> = mutableListOf()
 
     init {
-//        setOnClickListener {
-//            val coords = getCoordsByLocation(locationX, locationY)
-//            getShipByCoords(coords[0], coords[1])?.let {
-//                val ship = Ship(it.x, it.y, it.type, !it.rotate)
-//                ships.remove(it)
-//                ships.add(if (checkShip(ship)) ship else it)
-//            }
-//        }
         setOnTouchListener { _, motionEvent ->
             when (motionEvent.action) {
                 ACTION_DOWN -> {

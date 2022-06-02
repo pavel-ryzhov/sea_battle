@@ -1,23 +1,28 @@
 package com.example.sea_battle.utils
 
+import com.example.sea_battle.entities.Task
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
 import java.net.Socket
 import java.net.SocketException
 
-class SpecialBufferedWriter(socket: Socket) {
+class SpecialBufferedWriter(private val socket: Socket) {
     private val bufferedWriter: BufferedWriter =
         BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
 
     fun writeString(string: String) {
-        bufferedWriter.write("$string###")
+        synchronized(socket) {
+            bufferedWriter.write("$string###")
+        }
     }
 
     fun flush() {
-        try {
-            bufferedWriter.flush()
-        }catch (e: SocketException){
-            throw SocketIsNotConnectedException()
+        synchronized(socket) {
+            try {
+                bufferedWriter.flush()
+            } catch (e: SocketException) {
+                throw SocketIsNotConnectedException()
+            }
         }
     }
 
@@ -27,10 +32,19 @@ class SpecialBufferedWriter(socket: Socket) {
     }
 
     fun writeBytes(bytes: ByteArray){
-        writeString(String(bytes))
+        synchronized(socket) {
+            socket.getOutputStream().apply {
+                write(bytes)
+                write("###".toByteArray())
+            }
+        }
     }
 
-    fun writeBytesAndFlush(bytes: ByteArray){
-        writeStringAndFlush(String(bytes))
+    fun writeTask(task: Task){
+        synchronized(socket) {
+            bufferedWriter.write(task.tag + "\n")
+            bufferedWriter.flush()
+        }
+        writeBytes(task.data)
     }
 }

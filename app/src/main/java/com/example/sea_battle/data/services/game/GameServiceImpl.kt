@@ -1,11 +1,10 @@
 package com.example.sea_battle.data.services.game
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.sea_battle.entities.Ship
+import com.example.sea_battle.entities.Task
 import com.example.sea_battle.utils.SpecialBufferedReader
 import com.example.sea_battle.utils.SpecialBufferedWriter
-import com.example.sea_battle.entities.Task
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
@@ -13,26 +12,44 @@ import java.io.ObjectOutputStream
 import java.net.Socket
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
+import com.example.sea_battle.views.PlaygroundView.Companion.OTHER_PLAYER_TURN
+import com.example.sea_battle.views.PlaygroundView.Companion.THIS_PLAYER_TURN
 
 @Singleton
 class GameServiceImpl @Inject constructor() : GameService() {
 
-    private lateinit var thisPlayerShips: List<Ship>
-    private lateinit var otherPlayerShips: List<Ship>
+
+    companion object{
+        private const val OTHER_PLAYER_SHIPS_TAG = "otherPlayerShips"
+        private const val FIRST_TURN_TAG = "firstTurn"
+        private const val CLICK_TAG = "click"
+    }
+
+
+    override lateinit var thisPlayerShips: List<Ship>
+    override lateinit var otherPlayerShips: List<Ship>
+
     private lateinit var bufferedReader: SpecialBufferedReader
     private lateinit var bufferedWriter: SpecialBufferedWriter
     private lateinit var socket: Socket
     private var areFirstShipsGot = false
     private var isInterrupted = false
+    private var firstTurn = -1
 
 
-    override val bothPlayersAreReadyLiveData = MutableLiveData<Unit>()
+    override val clickLiveData = MutableLiveData<IntArray>()
+    override val bothPlayersAreReadyLiveData = MutableLiveData<Int>()
+
+    override fun executeClick(coords: IntArray) {
+        bufferedWriter.writeTask(Task(CLICK_TAG, "${coords.component1()}:${coords.component2()}".toByteArray()))
+    }
 
     override fun start() {
         isInterrupted = false
         Thread{
             while (!isInterrupted){
-                Thread(ProcessTask(Task(bufferedReader.readString()))).start()
+                Thread(ProcessTask(bufferedReader.readTask())).start()
             }
         }.start()
     }
@@ -51,23 +68,37 @@ class GameServiceImpl @Inject constructor() : GameService() {
         thisPlayerShips = list
         val byteArrayOutputStream = ByteArrayOutputStream()
         ObjectOutputStream(byteArrayOutputStream).use { it.writeObject(list) }
-        bufferedWriter.writeStringAndFlush("otherPlayerShips\n" + String(byteArrayOutputStream.toByteArray()))
+        bufferedWriter.writeTask(Task(OTHER_PLAYER_SHIPS_TAG, byteArrayOutputStream.toByteArray()))
         if (areFirstShipsGot){
-            bothPlayersAreReadyLiveData.postValue(Unit)
-        } else areFirstShipsGot = true
+            bothPlayersAreReadyLiveData.postValue(firstTurn)
+        } else {
+            areFirstShipsGot = true
+        }
     }
 
     private inner class ProcessTask(private val task: Task): Runnable{
         override fun run() {
             when (task.tag){
-                "otherPlayerShips" -> {
-                    val byteArrayInputStream = ByteArrayInputStream(task.data.toByteArray())
-                    ObjectInputStream(byteArrayInputStream).use {
+                OTHER_PLAYER_SHIPS_TAG -> {
+                    val byteArrayInputStream = ByteArrayInputStream(task.data)
+                    ObjectInputStream(byteArrayInputStream).let {
                         otherPlayerShips = it.readObject() as List<Ship>
                     }
                     if (areFirstShipsGot){
-                        bothPlayersAreReadyLiveData.postValue(Unit)
-                    } else areFirstShipsGot = true
+                        bothPlayersAreReadyLiveData.postValue(firstTurn)
+                    } else {
+                        areFirstShipsGot = true
+                        val ft = Math.random().roundToInt()
+                        bufferedWriter.writeTask(Task(FIRST_TURN_TAG, byteArrayOf((if (ft == OTHER_PLAYER_TURN) THIS_PLAYER_TURN else OTHER_PLAYER_TURN).toByte())))
+                        firstTurn = ft
+                    }
+                }
+                FIRST_TURN_TAG -> {
+                    firstTurn = task.data.first().toInt()
+                }
+                CLICK_TAG -> {
+                    val coords = String(task.data).split(":")
+                    clickLiveData.postValue(intArrayOf(coords.component1().toInt(), coords.component2().toInt()))
                 }
             }
         }

@@ -13,30 +13,67 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.example.sea_battle.R
+import com.example.sea_battle.data.services.game.GameService
+import com.example.sea_battle.entities.Ship
+import com.example.sea_battle.extensions.SetExtensions.Companion.containsAllIntArrays
+import com.example.sea_battle.utils.Vibrator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlin.math.floor
 
 @SuppressLint("ClickableViewAccessibility")
 class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
-    companion object{
-        private const val YOUR_FIELD = 0
-        private const val ENEMY_FIELD = 1
+    companion object {
+        const val THIS_PLAYER_FIELD = 0
+        const val OTHER_PLAYER_FIELD = 1
+
+        const val THIS_PLAYER_TURN = 0
+        const val OTHER_PLAYER_TURN = 1
     }
+
+    private var gameService: GameService? = null
 
     private lateinit var coords: Array<String>
     private var otherPlayerName = "otherPlayerName"
-    private var timeBound: Int = 0
+    private var timeBound = -1
     private var cellWidth = 0f
     private var marginX = 0f
     private var marginY = 0f
-    private var yourTurn = false
+    private var turn = -1
+    private var turnStartTime: Long = -1
+    private val crosses = mutableSetOf<IntArray>()
+    private val hits = mutableSetOf<IntArray>()
 
 
     init {
         setOnTouchListener { _, motionEvent ->
-            when(motionEvent.action){
-                MotionEvent.ACTION_MOVE -> {
-
+            if (motionEvent.action == MotionEvent.ACTION_UP) {
+                if (turn == THIS_PLAYER_TURN) {
+                    if (isClickInField(OTHER_PLAYER_FIELD, motionEvent.x, motionEvent.y)) {
+                        val coords = getCoordsByLocation(motionEvent.x, motionEvent.y)
+                        if (!hits.containsAllIntArrays(setOf(coords))) {
+                            CoroutineScope(Dispatchers.IO + Job()).launch(Dispatchers.IO) {
+                                gameService?.executeClick(coords.copyOfRange(1, 3))
+                            }
+                            crosses.add(coords)
+                            val ship = getShipByCoords(
+                                OTHER_PLAYER_FIELD,
+                                coords.component2(),
+                                coords.component3()
+                            )
+                            turnStartTime = System.currentTimeMillis()
+                            if (ship != null) {
+                                hits.add(coords)
+                                checkIfShipIsSunk(OTHER_PLAYER_FIELD, ship)
+                                Vibrator.vibrate(context, 100)
+                            }else{
+                                turn = (turn + 1) % 2
+                            }
+                        }
+                    }
                 }
             }
 
@@ -47,7 +84,7 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
 
-        canvas?.let {
+        canvas?.let { it ->
             val paint = Paint()
             it.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint.apply {
                 style = Paint.Style.FILL
@@ -163,7 +200,10 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
             paint.apply {
                 textSize = cellWidth - 12
                 typeface = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    resources.getFont(R.font.montserrat) else ResourcesCompat.getFont(context, R.font.montserrat))
+                    resources.getFont(R.font.montserrat) else ResourcesCompat.getFont(
+                    context,
+                    R.font.montserrat
+                ))
             }
 
             val str = resources.getString(R.string.your_field)
@@ -182,15 +222,35 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
             textHeight = rect.height().toFloat()
             textWidth = paint.measureText(otherPlayerName)
 
+            gameService?.let { gameService ->
+                drawShips(it, THIS_PLAYER_FIELD, gameService.thisPlayerShips)
+            }
+
+            drawShips(
+                it,
+                THIS_PLAYER_FIELD,
+                hits.filter { it.component1() == THIS_PLAYER_FIELD }
+                    .map { Ship(it.component2(), it.component3(), 1, false) })
+            drawShips(
+                it,
+                OTHER_PLAYER_FIELD,
+                hits.filter { it.component1() == OTHER_PLAYER_FIELD }
+                    .map { Ship(it.component2(), it.component3(), 1, false) })
+
+            for (cross in crosses) {
+                drawCross(it, cross.component1(), cross.component2(), cross.component3())
+            }
+
+
             it.drawText(
-                otherPlayerName,
+                "$otherPlayerName:",
                 marginX + (11 * cellWidth - textWidth) / 2f,
                 marginY + cellWidth * 13 + (cellWidth - textHeight) / 2f + textHeight,
                 paint
             )
             paint.apply {
                 strokeWidth = 5f
-                color = Color.GREEN
+                color = Color.RED
                 style = Paint.Style.STROKE
             }
 
@@ -201,11 +261,10 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
                 marginY + 12 * cellWidth,
                 paint
             )
-            drawProgress(it, ContextCompat.getColor(context, R.color.foregroundColor), YOUR_FIELD, if (yourTurn) 3f else 100f)
 
             paint.apply {
                 strokeWidth = 5f
-                color = Color.RED
+                color = Color.GREEN
                 style = Paint.Style.STROKE
             }
             it.drawRect(
@@ -215,7 +274,8 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
                 marginY + 25 * cellWidth,
                 paint
             )
-            drawProgress(it, ContextCompat.getColor(context, R.color.foregroundColor), ENEMY_FIELD, if (!yourTurn) 3f else 100f)
+
+            drawTime(it)
 
 
         }
@@ -223,7 +283,82 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
         postInvalidateOnAnimation()
     }
 
-    private fun drawProgress(canvas: Canvas, color: Int, field: Int, percent: Float){
+    private fun checkIfShipIsSunk(field: Int, ship: Ship){
+        val shipCells = mutableSetOf<IntArray>()
+        if (!ship.rotate){
+            for (i in 0 until ship.type){
+                shipCells.add(intArrayOf(field, ship.x + i, ship.y))
+            }
+        }else{
+            for (i in 0 until ship.type){
+                shipCells.add(intArrayOf(field, ship.x, ship.y + i))
+            }
+        }
+
+        if (hits.containsAllIntArrays(shipCells)){
+            if (!ship.rotate){
+                if (ship.y > 0){
+                    if (ship.x > 0){
+                        crosses.add(intArrayOf(field, ship.x - 1, ship.y - 1))
+                    }
+                    if (ship.x + ship.type - 1 < 9){
+                        crosses.add(intArrayOf(field, ship.x + ship.type, ship.y - 1))
+                    }
+                    for (i in 0 until ship.type){
+                        crosses.add(intArrayOf(field, ship.x + i, ship.y - 1))
+                    }
+                }
+                if (ship.y + ship.type - 1 < 9){
+                    if (ship.x > 0){
+                        crosses.add(intArrayOf(field, ship.x - 1, ship.y + 1))
+                    }
+                    if (ship.x + ship.type - 1 < 9){
+                        crosses.add(intArrayOf(field, ship.x + ship.type, ship.y + 1))
+                    }
+                    for (i in 0 until ship.type){
+                        crosses.add(intArrayOf(field, ship.x + i, ship.y + 1))
+                    }
+                }
+                if (ship.x > 0){
+                    crosses.add(intArrayOf(field, ship.x - 1, ship.y))
+                }
+                if (ship.x + ship.type - 1 < 9){
+                    crosses.add(intArrayOf(field, ship.x + ship.type, ship.y))
+                }
+            }else{
+                if (ship.x > 0){
+                    if (ship.y > 0){
+                        crosses.add(intArrayOf(field, ship.x - 1, ship.y - 1))
+                    }
+                    if (ship.y + ship.type - 1 < 9){
+                        crosses.add(intArrayOf(field, ship.x - 1, ship.y + ship.type))
+                    }
+                    for (i in 0 until ship.type){
+                        crosses.add(intArrayOf(field, ship.x - 1, ship.y + i))
+                    }
+                }
+                if (ship.x + ship.type - 1 < 9){
+                    if (ship.y > 0){
+                        crosses.add(intArrayOf(field, ship.x + 1, ship.y - 1))
+                    }
+                    if (ship.y + ship.type - 1 < 9){
+                        crosses.add(intArrayOf(field, ship.x + 1, ship.y + ship.type))
+                    }
+                    for (i in 0 until ship.type){
+                        crosses.add(intArrayOf(field, ship.x + 1, ship.y + i))
+                    }
+                }
+                if (ship.y > 0){
+                    crosses.add(intArrayOf(field, ship.x, ship.y - 1))
+                }
+                if (ship.y + ship.type - 1 < 9){
+                    crosses.add(intArrayOf(field, ship.x, ship.y + ship.type))
+                }
+            }
+        }
+    }
+
+    private fun drawProgress(canvas: Canvas, color: Int, field: Int, percent: Float) {
         val paint = Paint().apply {
             this.color = color
             style = Paint.Style.FILL
@@ -238,43 +373,212 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
         val point4X = marginX + cellWidth
         var point4Y = marginY + cellWidth * 12
 
-        if (field == ENEMY_FIELD){
+        if (field == OTHER_PLAYER_FIELD) {
             point1Y += 13 * cellWidth
             point2Y += 13 * cellWidth
             point3Y += 13 * cellWidth
             point4Y += 13 * cellWidth
         }
 
-        if (percent > 12.5f){
+        if (percent > 12.5f) {
             canvas.drawLine(point1X + (point2X - point1X) / 2f, point1Y, point2X, point2Y, paint)
-            if (percent > 37.5f){
+            if (percent > 37.5f) {
                 canvas.drawLine(point2X, point2Y, point3X, point3Y, paint)
-                if (percent > 62.5f){
+                if (percent > 62.5f) {
                     canvas.drawLine(point3X, point3Y, point4X, point4Y, paint)
-                    if (percent > 87.5f){
+                    if (percent > 87.5f) {
                         canvas.drawLine(point4X, point4Y, point1X, point1Y, paint)
-                        canvas.drawLine(point1X, point1Y, point1X + 5 * cellWidth * (percent - 87.5f) / 12.5f, point1Y, paint)
-                    }else{
-                        canvas.drawLine(point4X, point4Y, point4X, point4Y - 10 * cellWidth * (percent - 62.5f) / 25f, paint)
+                        canvas.drawLine(
+                            point1X,
+                            point1Y,
+                            point1X + 5 * cellWidth * (percent - 87.5f) / 12.5f,
+                            point1Y,
+                            paint
+                        )
+                    } else {
+                        canvas.drawLine(
+                            point4X,
+                            point4Y,
+                            point4X,
+                            point4Y - 10 * cellWidth * (percent - 62.5f) / 25f,
+                            paint
+                        )
                     }
-                }else{
-                    canvas.drawLine(point3X, point3Y, point3X - 10 * cellWidth * (percent - 37.5f) / 25f, point3Y, paint)
+                } else {
+                    canvas.drawLine(
+                        point3X,
+                        point3Y,
+                        point3X - 10 * cellWidth * (percent - 37.5f) / 25f,
+                        point3Y,
+                        paint
+                    )
                 }
-            }else{
-                canvas.drawLine(point2X, point2Y, point2X, point2Y + 10 * cellWidth * (percent - 12.5f) / 25f, paint)
+            } else {
+                canvas.drawLine(
+                    point2X,
+                    point2Y,
+                    point2X,
+                    point2Y + 10 * cellWidth * (percent - 12.5f) / 25f,
+                    paint
+                )
             }
-        }else{
-            canvas.drawLine(point1X + (point2X - point1X) / 2f, point1Y, point1X + (point2X - point1X) / 2f + 5 * cellWidth * percent / 12.5f, point1Y, paint)
+        } else {
+            canvas.drawLine(
+                point1X + (point2X - point1X) / 2f,
+                point1Y,
+                point1X + (point2X - point1X) / 2f + 5 * cellWidth * percent / 12.5f,
+                point1Y,
+                paint
+            )
         }
 
     }
 
-    fun setTimeBound(timeBound: Int){
+    private fun drawCross(canvas: Canvas, field: Int, x: Int, y: Int) {
+        val paint = Paint().apply {
+            style = Paint.Style.FILL_AND_STROKE
+            strokeWidth = 4f
+            color = ContextCompat.getColor(
+                context,
+                if (getShipByCoords(
+                        field,
+                        x,
+                        y
+                    ) == null
+                ) R.color.foregroundColor else R.color.backgroundColor
+            )
+        }
+        val plY = if (field == OTHER_PLAYER_FIELD) 13 else 0
+        canvas.drawLine(
+            marginX + cellWidth * (x + 1) + 7,
+            marginY + cellWidth * (y + 2 + plY) + 7,
+            marginX + cellWidth * (x + 2) - 7,
+            marginY + cellWidth * (y + 3 + plY) - 7,
+            paint
+        )
+        canvas.drawLine(
+            marginX + cellWidth * (x + 1) + 7,
+            marginY + cellWidth * (y + 3 + plY) - 7,
+            marginX + cellWidth * (x + 2) - 7,
+            marginY + cellWidth * (y + 2 + plY) + 7,
+            paint
+        )
+    }
+
+    private fun getShipByCoords(field: Int, x: Int, y: Int): Ship? {
+        gameService?.let {
+            for (ship in (if (field == THIS_PLAYER_FIELD) it.thisPlayerShips else it.otherPlayerShips)) {
+                if (ship.rotate) {
+                    if (x == ship.x && y >= ship.y && y < ship.y + ship.type) {
+                        return ship
+                    }
+                } else {
+                    if (y == ship.y && x >= ship.x && x < ship.x + ship.type) {
+                        return ship
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    private fun drawTime(canvas: Canvas) {
+        if (turn != -1 && turnStartTime != (-1).toLong()) {
+            drawProgress(
+                canvas,
+                ContextCompat.getColor(context, R.color.foregroundColor),
+                if (turn == OTHER_PLAYER_TURN) THIS_PLAYER_FIELD else OTHER_PLAYER_FIELD,
+                (System.currentTimeMillis() - turnStartTime) / timeBound.toFloat() / 10f
+            )
+            drawProgress(
+                canvas,
+                ContextCompat.getColor(context, R.color.foregroundColor),
+                if (turn == THIS_PLAYER_TURN) THIS_PLAYER_FIELD else OTHER_PLAYER_FIELD,
+                100f
+            )
+        } else {
+            drawProgress(
+                canvas,
+                ContextCompat.getColor(context, R.color.foregroundColor),
+                THIS_PLAYER_FIELD,
+                100f
+            )
+            drawProgress(
+                canvas,
+                ContextCompat.getColor(context, R.color.foregroundColor),
+                OTHER_PLAYER_FIELD,
+                100f
+            )
+        }
+    }
+
+    private fun drawShips(canvas: Canvas, field: Int, ships: List<Ship>) {
+        val paint = Paint().apply {
+            style = Paint.Style.FILL
+            color = ContextCompat.getColor(context, R.color.foregroundColor)
+        }
+        val plY = if (field == THIS_PLAYER_FIELD) 0 else 13
+        for (ship in ships) {
+            if (ship.rotate) {
+                canvas.drawRect(
+                    marginX + cellWidth * (ship.x + 1),
+                    marginY + cellWidth * (ship.y + 2 + plY),
+                    marginX + cellWidth * (ship.x + 2),
+                    marginY + cellWidth * (ship.y + ship.type + 2 + plY),
+                    paint
+                )
+            } else {
+                canvas.drawRect(
+                    marginX + cellWidth * (ship.x + 1),
+                    marginY + cellWidth * (ship.y + 2 + plY),
+                    marginX + cellWidth * (ship.x + ship.type + 1),
+                    marginY + cellWidth * (ship.y + 3 + plY),
+                    paint
+                )
+            }
+        }
+    }
+
+    fun start() {
+        turnStartTime = System.currentTimeMillis()
+    }
+
+    fun setFirstTurn(firstTurn: Int) {
+        turn = firstTurn
+    }
+
+    fun init(otherPlayerName: String, timeBound: Int, gameService: GameService) {
+        this.otherPlayerName = otherPlayerName
         this.timeBound = timeBound
+        this.gameService = gameService
     }
-    fun setOtherPlayerName(name: String){
-        otherPlayerName = name
+
+
+    private fun getCoordsByLocation(x: Float, y: Float): IntArray {
+        val absoluteX = x - marginX - cellWidth
+        val absoluteY = y - marginY - cellWidth * 2
+        if (absoluteX < 0 || absoluteX > cellWidth * 10 || absoluteY < 0 || absoluteY > cellWidth * 23 || (absoluteY > 10 && absoluteY < 13)) {
+            return intArrayOf(-1, -1, -1)
+        }
+        return if (absoluteY > cellWidth * 10) {
+            intArrayOf(
+                OTHER_PLAYER_FIELD,
+                floor(absoluteX / cellWidth).toInt(),
+                floor(absoluteY / cellWidth).toInt() - 13
+            )
+        } else {
+            intArrayOf(
+                THIS_PLAYER_FIELD,
+                floor(absoluteX / cellWidth).toInt(),
+                floor(absoluteY / cellWidth).toInt()
+            )
+        }
     }
+
+    private fun isClickInField(field: Int, x: Float, y: Float): Boolean {
+        return x > marginX + cellWidth && x < marginX + cellWidth * 11 && (if (field == THIS_PLAYER_FIELD) y > marginY + cellWidth * 2 && y < marginY + cellWidth * 12 else y > marginY + cellWidth * 15 && y < marginY + cellWidth * 25)
+    }
+
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
@@ -283,8 +587,17 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
         marginX = (width - cellWidth * 11) / 2f
         marginY = 16f
 
-//        cellWidth = floor((width - 42) / 11.0).toFloat()
-//        marginX = (width - 11 * cellWidth - 10) / 2f
-//        marginY = marginX
+        gameService!!.clickLiveData.observeForever {
+            crosses.add(intArrayOf(THIS_PLAYER_FIELD, it.component1(), it.component2()))
+            val ship = getShipByCoords(THIS_PLAYER_FIELD, it.component1(), it.component2())
+            turnStartTime = System.currentTimeMillis()
+            if (ship != null) {
+                hits.add(intArrayOf(THIS_PLAYER_FIELD, it.component1(), it.component2()))
+                checkIfShipIsSunk(THIS_PLAYER_FIELD, ship)
+                Vibrator.vibrate(context, 100)
+            }else{
+                turn = (turn + 1) % 2
+            }
+        }
     }
 }

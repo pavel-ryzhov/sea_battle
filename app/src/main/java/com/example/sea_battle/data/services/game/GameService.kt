@@ -6,8 +6,12 @@ import java.net.Socket
 
 abstract class GameService {
 
-    abstract val bothPlayersAreReadyLiveData: MutableLiveData<Unit>
+    abstract val bothPlayersAreReadyLiveData: MutableLiveData<Int>
+    abstract val clickLiveData: MutableLiveData<IntArray>
+    abstract val otherPlayerShips: List<Ship>
+    abstract val thisPlayerShips: List<Ship>
 
+    abstract fun executeClick(coords: IntArray)
     abstract fun start()
     abstract fun interrupt()
     abstract fun setOtherPlayer(socket: Socket)

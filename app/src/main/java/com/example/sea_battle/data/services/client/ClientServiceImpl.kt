@@ -15,8 +15,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@Singleton
 class ClientServiceImpl @Inject constructor() : ClientService() {
 
     companion object{

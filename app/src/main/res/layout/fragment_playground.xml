@@ -6,6 +6,7 @@
     android:layout_height="match_parent">
 
     <com.example.sea_battle.views.PlaygroundView
+        android:id="@+id/playground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
@@ -23,6 +24,7 @@
             android:layout_marginBottom="8dp"
             android:gravity="center"
             android:textColor="@android:color/black"
+            android:textStyle="bold"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@id/progressBar"
             app:layout_constraintEnd_toEndOf="parent"

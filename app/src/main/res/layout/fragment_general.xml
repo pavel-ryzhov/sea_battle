@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginHorizontal="8dp"
-            android:text="Изменить"
+            android:text="@string/change"
             android:textAllCaps="false"
             android:textSize="12sp" />
 
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="5dp"
-            android:hint="Ваше имя:">
+            android:hint="@string/your_name">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextName"
@@ -57,7 +57,7 @@
             android:background="@drawable/rounded_background"
             android:gravity="center"
             android:padding="16dp"
-            android:text="Правила"
+            android:text="@string/rules"
             android:textAllCaps="false"
             android:textColor="@color/foregroundColor"
             android:textSize="20sp"
@@ -71,7 +71,7 @@
             android:background="@drawable/rounded_background"
             android:gravity="center"
             android:padding="16dp"
-            android:text="Создать игру"
+            android:text="@string/create_game"
             android:textAllCaps="false"
             android:textColor="@color/foregroundColor"
             android:textSize="20sp"
@@ -85,7 +85,7 @@
             android:background="@drawable/rounded_background"
             android:gravity="center"
             android:padding="16dp"
-            android:text="Присоединиться к игре"
+            android:text="@string/join_game"
             android:textAllCaps="false"
             android:textColor="@color/foregroundColor"
             android:textSize="20sp"
@@ -99,7 +99,7 @@
             android:background="@drawable/rounded_background"
             android:gravity="center"
             android:padding="16dp"
-            android:text="Настройки"
+            android:text="@string/settings"
             android:textAllCaps="false"
             android:textColor="@color/foregroundColor"
             android:textSize="20sp"
