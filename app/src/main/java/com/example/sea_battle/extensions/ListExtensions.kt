@@ -12,9 +12,10 @@ class ListExtensions {
             return true
         }
         fun List<Byte>.byteListEndsWithString(string: String): Boolean{
-            if (size < string.length) return false
-            for (i in string.indices){
-                if (get(size - string.length + i) != string[i].code.toByte()){
+            val strArray = string.toByteArray()
+            if (size < strArray.size) return false
+            for (i in strArray.indices){
+                if (get(size - strArray.size + i) != strArray[i]){
                     return false
                 }
             }

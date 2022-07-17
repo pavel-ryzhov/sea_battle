@@ -5,25 +5,30 @@ import java.io.BufferedWriter
 import java.io.OutputStreamWriter
 import java.net.Socket
 import java.net.SocketException
+import java.util.concurrent.locks.ReentrantLock
 
 class SpecialBufferedWriter(private val socket: Socket) {
+    companion object {
+        private val reentrantLock = ReentrantLock()
+    }
+
     private val bufferedWriter: BufferedWriter =
         BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
 
     fun writeString(string: String) {
-        synchronized(socket) {
-            bufferedWriter.write("$string###")
-        }
+        reentrantLock.lock()
+        bufferedWriter.write("$string###")
+        reentrantLock.unlock()
     }
 
-    fun flush() {
-        synchronized(socket) {
-            try {
-                bufferedWriter.flush()
-            } catch (e: SocketException) {
-                throw SocketIsNotConnectedException()
-            }
+    private fun flush() {
+        reentrantLock.lock()
+        try {
+            bufferedWriter.flush()
+        } catch (e: SocketException) {
+            throw SocketIsNotConnectedException()
         }
+        reentrantLock.unlock()
     }
 
     fun writeStringAndFlush(string: String) {
@@ -31,20 +36,20 @@ class SpecialBufferedWriter(private val socket: Socket) {
         flush()
     }
 
-    fun writeBytes(bytes: ByteArray){
-        synchronized(socket) {
-            socket.getOutputStream().apply {
-                write(bytes)
-                write("###".toByteArray())
-            }
+    private fun writeBytes(bytes: ByteArray) {
+        socket.getOutputStream().apply {
+            write(bytes)
+            write("###".toByteArray())
         }
     }
 
-    fun writeTask(task: Task){
-        synchronized(socket) {
-            bufferedWriter.write(task.tag + "\n")
-            bufferedWriter.flush()
-        }
+    fun writeTask(task: Task) {
+        reentrantLock.lock()
+        bufferedWriter.write("${task.tag}\n")
+        bufferedWriter.flush()
         writeBytes(task.data)
+        Thread.sleep(250)
+        reentrantLock.unlock()
+        println(task)
     }
 }

@@ -9,38 +9,49 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.Socket
 import java.net.SocketTimeoutException
+import java.util.concurrent.locks.ReentrantLock
 
 class SpecialBufferedReader(private val socket: Socket) {
     private val bufferedReader = BufferedReader(InputStreamReader(socket.getInputStream()))
-    fun readString(timeout: Int = 0) : String{
-        try{
+
+    companion object {
+        private val reentrantLock = ReentrantLock()
+    }
+
+    fun readString(timeout: Int = 0): String {
+        try {
             val chars = mutableListOf<Char>()
             while (!chars.endsWithString("###")) {
                 socket.soTimeout = timeout
                 chars.add(bufferedReader.read().toChar())
             }
             return String(chars.toCharArray()).removeGrids()
-        }catch(e: SocketTimeoutException){
+        } catch (e: SocketTimeoutException) {
             throw SocketIsNotConnectedException()
         }
     }
-    fun readTask(timeout: Int = 0): Task{
+
+    fun readTask(timeout: Int = 0): Task {
+        reentrantLock.lock()
         try {
             socket.soTimeout = timeout
             return Task(bufferedReader.readLine(), readBytes(timeout))
-        }catch(e: SocketTimeoutException){
+        } catch (e: SocketTimeoutException) {
             throw SocketIsNotConnectedException()
+        } finally {
+            reentrantLock.unlock()
         }
     }
-    fun readBytes(timeout: Int = 0) : ByteArray{
-        try{
+
+    fun readBytes(timeout: Int = 0): ByteArray {
+        try {
+            socket.soTimeout = timeout
             val bytes = mutableListOf<Byte>()
             while (!bytes.byteListEndsWithString("###")) {
-                socket.soTimeout = timeout
                 bytes.add(socket.getInputStream().read().toByte())
             }
             return bytes.removeGrids().toByteArray()
-        }catch(e: SocketTimeoutException){
+        } catch (e: SocketTimeoutException) {
             throw SocketIsNotConnectedException()
         }
     }

@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.sea_battle.databinding.FragmentPlaygroundBinding
 import com.example.sea_battle.navigation.Navigator
+import com.example.sea_battle.presentation.game_result.GameResultFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.net.Socket
 import javax.inject.Inject
@@ -39,7 +40,6 @@ class PlaygroundFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         subscribeOnLiveData()
     }
 
@@ -54,6 +54,9 @@ class PlaygroundFragment : Fragment() {
                         isEnabled = true
                     }
                 }
+            }
+            gameFinishedLiveData.observe(viewLifecycleOwner){
+                navigator.openFragment(GameResultFragment().apply { init(it) }, false)
             }
         }
     }

@@ -12,9 +12,6 @@ import javax.inject.Inject
 class PlaygroundViewModel @Inject constructor(val gameService: GameService) : ViewModel() {
 
     val bothPlayersAreReadyLiveData = gameService.bothPlayersAreReadyLiveData
-
-    fun setOtherPlayer(socket: Socket){
-        gameService.setOtherPlayer(socket)
-    }
+    val gameFinishedLiveData = gameService.gameFinishedLiveData
 
 }
