@@ -18,7 +18,7 @@
         android:id="@+id/constraintLayoutLoading"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#AA888888">
+        android:background="@color/loadingBackground">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textView"
@@ -58,7 +58,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="@string/back" />
+            android:text="@string/exit" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonReady"

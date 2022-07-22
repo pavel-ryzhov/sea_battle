@@ -54,4 +54,6 @@
     <string name="play_again">Играть снова</string>
     <string name="do_you_really_want_to_exit">Вы действительно хотите выйти?</string>
     <string name="another_player_left_the_game">Другой игрок вышел</string>
+    <string name="apply">Применить</string>
+    <string name="connection_error">Ошибка соединения!</string>
 </resources>

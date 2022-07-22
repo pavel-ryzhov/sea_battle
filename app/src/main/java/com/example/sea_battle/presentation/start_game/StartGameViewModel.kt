@@ -23,6 +23,7 @@ class StartGameViewModel @Inject constructor(
     val clientJoinedLiveData = serverService.clientJoinedLiveData
     val userIsReadyLiveData = MutableLiveData<Boolean>()
     val otherPlayerExitedLiveData = gameService.otherPlayerExitedLiveData
+    val connectionErrorLiveData = gameService.connectionErrorLiveData
 
     fun startServer(name: String, timeBound: Int, isPublic: Boolean, password: String?) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -35,10 +36,8 @@ class StartGameViewModel @Inject constructor(
     }
 
     fun interrupt() {
-        viewModelScope.launch {
-            serverService.interrupt()
-            clientService.interrupt()
-        }
+        serverService.interrupt()
+        clientService.interrupt()
     }
 
     fun notifyThisPlayerIsReadyToStart(ships: List<Ship>) {
@@ -74,9 +73,10 @@ class StartGameViewModel @Inject constructor(
         }
     }
 
-    fun notifyFragmentDestroyed(){
+    fun notifyFragmentDestroyed() {
         clientJoinedLiveData.postValue(null)
         otherPlayerExitedLiveData.postValue(null)
+        connectionErrorLiveData.postValue(null)
     }
 
 }

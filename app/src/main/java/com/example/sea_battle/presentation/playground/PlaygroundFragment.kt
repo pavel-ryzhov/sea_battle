@@ -6,9 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
+import com.example.sea_battle.MainActivity
+import com.example.sea_battle.R
 import com.example.sea_battle.databinding.FragmentPlaygroundBinding
 import com.example.sea_battle.navigation.Navigator
+import com.example.sea_battle.presentation.dialogs.ConfirmActionDialog
+import com.example.sea_battle.presentation.dialogs.InfoDialog
 import com.example.sea_battle.presentation.game_result.GameResultFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.net.Socket
@@ -36,6 +41,16 @@ class PlaygroundFragment : Fragment() {
             viewModel.gameService
         )
         binding.playground.isEnabled = false
+        navigator.setOnBackPressed(this::class.java, false) {
+            requireActivity().supportFragmentManager.apply {
+                ConfirmActionDialog(requireActivity(),
+                    getString(R.string.do_you_really_want_to_exit),
+                    onConfirmed = {
+                        viewModel.postExit()
+                        exitFragment()
+                    }).show()
+            }
+        }
         return binding.root
     }
 
@@ -57,11 +72,43 @@ class PlaygroundFragment : Fragment() {
                     }
                 }
             }
-            gameFinishedLiveData.observe(viewLifecycleOwner){
+            gameFinishedLiveData.observe(viewLifecycleOwner) {
                 it?.let {
                     navigator.openFragment(GameResultFragment().apply { init(it) }, false)
                 }
             }
+            otherPlayerExitedLiveData.observe(viewLifecycleOwner) {
+                it?.let {
+                    InfoDialog(
+                        requireActivity(),
+                        getString(R.string.another_player_left_the_game)
+                    ) {
+                        exitFragment()
+                    }.show()
+                }
+            }
+            connectionErrorLiveData.observe(viewLifecycleOwner) {
+                it?.let {
+                    InfoDialog(requireActivity(), getString(R.string.connection_error)) {
+                        exitFragment()
+                    }.show()
+                }
+            }
+        }
+    }
+    private fun exitFragment(){
+        requireActivity().apply {
+            supportFragmentManager.let {
+                it.popBackStack(
+                    it.getBackStackEntryAt(3).id,
+                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+                )
+                it.popBackStack(
+                    it.getBackStackEntryAt(2).id,
+                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+                )
+            }
+            (this as MainActivity).onBackPressedAppCompatActivity()
         }
     }
 

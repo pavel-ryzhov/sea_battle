@@ -10,6 +10,7 @@ abstract class GameService {
     abstract val clickLiveData: MutableLiveData<IntArray?>
     abstract val gameFinishedLiveData: MutableLiveData<Pair<Int, List<Ship>>?>
     abstract val otherPlayerExitedLiveData: MutableLiveData<Unit>
+    abstract val connectionErrorLiveData: MutableLiveData<Unit>
     abstract val otherPlayerShips: List<Ship>
     abstract val thisPlayerShips: List<Ship>
 
@@ -21,4 +22,5 @@ abstract class GameService {
     abstract fun postExit()
     abstract fun notifyThisPlayerIsReadyToStart(list: List<Ship>)
     abstract fun isJoined(): Boolean
+    abstract fun notifyFragmentDestroyed()
 }

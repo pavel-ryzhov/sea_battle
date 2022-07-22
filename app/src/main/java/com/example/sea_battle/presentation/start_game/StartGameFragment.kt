@@ -30,14 +30,12 @@ class StartGameFragment : Fragment() {
     private lateinit var client: Client
     private val viewModel: StartGameViewModel by viewModels()
     private var isHost = false
-    private var needToCloseSocketOnExit = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        needToCloseSocketOnExit = true
         binding = FragmentStartGameBinding.inflate(inflater, container, false)
         navigator.setOnBackPressed(this::class.java, false) {
             requireActivity().supportFragmentManager.apply {
@@ -45,7 +43,6 @@ class StartGameFragment : Fragment() {
                     ConfirmActionDialog(requireActivity(),
                         getString(R.string.do_you_really_want_to_exit),
                         onConfirmed = {
-                            needToCloseSocketOnExit = false
                             viewModel.postExit()
                             popBackStack(
                                 getBackStackEntryAt(2).id,
@@ -116,7 +113,6 @@ class StartGameFragment : Fragment() {
             }
             userIsReadyLiveData.observe(viewLifecycleOwner) {
                 if (it) {
-                    needToCloseSocketOnExit = false
                     navigator.openFragment(PlaygroundFragment().apply {
                         otherPlayerSocket =
                             if (!isHost) this@StartGameFragment.host.socket else client.socket
@@ -147,6 +143,13 @@ class StartGameFragment : Fragment() {
                     }.show()
                 }
             }
+            connectionErrorLiveData.observe(viewLifecycleOwner){
+                it?.let {
+                    InfoDialog(requireActivity(), getString(R.string.connection_error)){
+                        requireActivity().onBackPressed()
+                    }.show()
+                }
+            }
         }
     }
 
@@ -159,7 +162,7 @@ class StartGameFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        if (needToCloseSocketOnExit) viewModel.close()
+        viewModel.interrupt()
         viewModel.notifyFragmentDestroyed()
         super.onDestroy()
     }

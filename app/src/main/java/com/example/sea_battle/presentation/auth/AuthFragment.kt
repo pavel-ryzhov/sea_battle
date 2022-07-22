@@ -44,6 +44,9 @@ class AuthFragment : Fragment(){
             executeLiveData = true
             viewModel.checkName(binding.editTextName.text.toString())
         }
+        binding.relativeLayoutBack.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
         subscribeOnLiveData()
     }
     private fun subscribeOnLiveData(){

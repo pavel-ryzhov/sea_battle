@@ -1,10 +1,8 @@
 package com.example.sea_battle.data.services.game
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.sea_battle.entities.Ship
 import com.example.sea_battle.entities.Task
-import com.example.sea_battle.utils.SocketIsNotConnectedException
 import com.example.sea_battle.utils.SpecialBufferedReader
 import com.example.sea_battle.utils.SpecialBufferedWriter
 import com.example.sea_battle.views.PlaygroundView.Companion.OTHER_PLAYER_TURN
@@ -20,8 +18,6 @@ import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.net.Socket
-import java.net.SocketException
-import java.net.SocketTimeoutException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
@@ -52,11 +48,13 @@ class GameServiceImpl @Inject constructor() : GameService() {
     private var gameFinished = false
     private var firstTurn = -1
     private var isJoined: Boolean = true
+    private var connectionErrorExpected = false
 
     override val clickLiveData = MutableLiveData<IntArray?>()
     override val bothPlayersAreReadyLiveData = MutableLiveData<Int?>()
     override val gameFinishedLiveData = MutableLiveData<Pair<Int, List<Ship>>?>()
     override val otherPlayerExitedLiveData = MutableLiveData<Unit>()
+    override val connectionErrorLiveData = MutableLiveData<Unit>()
 
     override fun executeClick(coords: IntArray) {
         bufferedWriter.writeTask(
@@ -72,9 +70,12 @@ class GameServiceImpl @Inject constructor() : GameService() {
             PLAYER_EXITED_TAG,
             EMPTY_DATA
         ))
+        connectionErrorExpected = true
     }
 
     override fun start() {
+        areFirstShipsGot = false
+        connectionErrorExpected = false
         isInterrupted = false
         isJoined = true
         Thread {
@@ -82,12 +83,16 @@ class GameServiceImpl @Inject constructor() : GameService() {
                 while (!isInterrupted) {
                     Thread(ProcessTask(bufferedReader.readTask())).start()
                 }
-            }catch (e: SocketException){
+            }catch (e: Exception){
                 isJoined = false
-            }catch (e: SocketIsNotConnectedException){
-                isJoined = false
+                if (!connectionErrorExpected)
+                    connectionErrorLiveData.postValue(Unit)
             }
         }.start()
+    }
+
+    override fun notifyFragmentDestroyed() {
+        clickLiveData.postValue(null)
     }
 
     override fun interrupt() {
@@ -171,6 +176,7 @@ class GameServiceImpl @Inject constructor() : GameService() {
                     )
                 }
                 PLAYER_EXITED_TAG -> {
+                    connectionErrorExpected = true
                     isJoined = false
                     isInterrupted = true
                     otherPlayerExitedLiveData.postValue(Unit)

@@ -2,4 +2,5 @@
 <resources>
     <color name="foregroundColor">#FFFFFFFF</color>
     <color name="backgroundColor">#FF000000</color>
+    <color name="loadingBackground">#AA444444</color>
 </resources>
