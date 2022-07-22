@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.example.sea_battle.MainActivity
 import com.example.sea_battle.databinding.FragmentAuthBinding
 import com.example.sea_battle.presentation.general.GeneralFragment
 import com.example.sea_battle.navigation.Navigator
@@ -26,6 +27,15 @@ class AuthFragment : Fragment(){
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentAuthBinding.inflate(inflater, container, false)
+        navigator.setOnBackPressed(this::class.java, false){
+            requireActivity().apply {
+                if (supportFragmentManager.backStackEntryCount <= 1){
+                    finish()
+                }else{
+                    (this as MainActivity).onBackPressedAppCompatActivity()
+                }
+            }
+        }
         return binding.root
     }
 
