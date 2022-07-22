@@ -14,4 +14,9 @@ class PlaygroundViewModel @Inject constructor(val gameService: GameService) : Vi
     val bothPlayersAreReadyLiveData = gameService.bothPlayersAreReadyLiveData
     val gameFinishedLiveData = gameService.gameFinishedLiveData
 
+    fun notifyFragmentDestroyed(){
+        bothPlayersAreReadyLiveData.postValue(null)
+        gameFinishedLiveData.postValue(null)
+    }
+
 }

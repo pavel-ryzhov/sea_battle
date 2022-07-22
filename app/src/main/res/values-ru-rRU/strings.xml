@@ -47,4 +47,11 @@
         <item>И</item>
         <item>К</item>
     </string-array>
+    <string name="you_have_won">Вы выиграли!</string>
+    <string name="you_have_lost">Вы проиграли!</string>
+    <string name="enemy_field">Вражеское поле:</string>
+    <string name="exit">Выход</string>
+    <string name="play_again">Играть снова</string>
+    <string name="do_you_really_want_to_exit">Вы действительно хотите выйти?</string>
+    <string name="another_player_left_the_game">Другой игрок вышел</string>
 </resources>

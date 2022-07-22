@@ -4,9 +4,10 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.view.Window
+import com.example.sea_battle.MainActivity
 import com.example.sea_battle.databinding.DialogInfoBinding
 
-class InfoDialog(context: Context, private val text: String, private val onHide: () -> Unit = {}) : Dialog(context) {
+class InfoDialog(private val contextActivity: Context, private val text: String, private val onHide: () -> Unit = {}) : Dialog(contextActivity) {
 
     private lateinit var binding: DialogInfoBinding
 
@@ -27,5 +28,6 @@ class InfoDialog(context: Context, private val text: String, private val onHide:
     override fun onStop() {
         super.onStop()
         onHide()
+        (contextActivity as MainActivity).hideSystemUI()
     }
 }

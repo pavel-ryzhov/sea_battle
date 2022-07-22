@@ -8,12 +8,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.sea_battle.MainActivity
 import com.example.sea_battle.R
-import com.example.sea_battle.data.services.client.ClientServiceImpl
 import com.example.sea_battle.databinding.FragmentChooseGameBinding
 import com.example.sea_battle.entities.Host
 import com.example.sea_battle.navigation.Navigator
-import com.example.sea_battle.presentation.dialogs.JoinPrivateGameDialog
 import com.example.sea_battle.presentation.dialogs.InfoDialog
+import com.example.sea_battle.presentation.dialogs.JoinPrivateGameDialog
 import com.example.sea_battle.presentation.start_game.StartGameFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +22,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ChooseGameFragment : Fragment(){
+class ChooseGameFragment : Fragment() {
 
     @Inject
     lateinit var navigator: Navigator
@@ -39,6 +38,9 @@ class ChooseGameFragment : Fragment(){
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentChooseGameBinding.inflate(inflater, container, false)
+        navigator.setOnBackPressed(this::class.java, true) {
+            viewModel.interrupt()
+        }
         return binding.root
     }
 
@@ -46,35 +48,37 @@ class ChooseGameFragment : Fragment(){
         subscribeOnLiveData()
         binding.recyclerView.adapter = recyclerAdapter
         binding.relativeLayoutBack.setOnClickListener {
-            viewModel.interrupt()
             requireActivity().onBackPressed()
         }
         viewModel.findServers(requireArguments().getString("clientName", ""))
     }
-    private fun subscribeOnLiveData(){
+
+    private fun subscribeOnLiveData() {
         viewModel.apply {
-            newServerDetectedLiveData.observe(viewLifecycleOwner){
-                recyclerAdapter.addItem(it)
+            newServerDetectedLiveData.observe(viewLifecycleOwner) {
+                it?.let {
+                    recyclerAdapter.addItem(it)
+                }
             }
-            serverIsNotAvailableLiveData.observe(viewLifecycleOwner){
-                InfoDialog(requireContext(), resources.getString(R.string.server_is_not_available)){
-                    recyclerAdapter.removeItem(it)
-                    (requireActivity() as MainActivity).hideSystemUI()
-                }.show()
+            serverIsNotAvailableLiveData.observe(viewLifecycleOwner) {
+                it?.let {
+                    InfoDialog(
+                        requireContext(),
+                        resources.getString(R.string.server_is_not_available)
+                    ) {
+                        recyclerAdapter.removeItem(it)
+                        (requireActivity() as MainActivity).hideSystemUI()
+                    }.show()
+                }
             }
         }
     }
 
-    override fun onStop() {
-        viewModel.interrupt()
-        super.onStop()
-    }
-
-    private fun onRecyclerAdapterItemClick(host: Host){
+    private fun onRecyclerAdapterItemClick(host: Host) {
         CoroutineScope(Dispatchers.Main + job).launch(Dispatchers.Main) {
-            if (!host.isPublic){
+            if (!host.isPublic) {
                 JoinPrivateGameDialog(requireContext(), navigator, viewModel, host).show()
-            }else {
+            } else {
                 CoroutineScope(Dispatchers.IO + job).launch(Dispatchers.IO) {
                     if (viewModel.notifyClientJoinedGame(host)) {
                         navigator.openFragment(
@@ -90,6 +94,8 @@ class ChooseGameFragment : Fragment(){
     }
 
     override fun onDestroy() {
+        viewModel.interrupt()
+        viewModel.notifyFragmentDestroyed()
         job.cancel()
         super.onDestroy()
     }

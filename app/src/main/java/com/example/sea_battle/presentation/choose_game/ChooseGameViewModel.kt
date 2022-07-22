@@ -14,7 +14,6 @@ import javax.inject.Inject
 class ChooseGameViewModel @Inject constructor(private val clientService: ClientService) : ViewModel() {
     val newServerDetectedLiveData = clientService.newServerDetectedLiveData
     val serverIsNotAvailableLiveData = clientService.serverIsNotAvailableLiveData
-    val netScanned = clientService.netScanned
 
     fun notifyClientJoinedGame(host: Host): Boolean{
         return clientService.notifyClientJoinedGame(host)
@@ -28,5 +27,9 @@ class ChooseGameViewModel @Inject constructor(private val clientService: ClientS
         viewModelScope.launch(Dispatchers.IO){
             clientService.interrupt()
         }
+    }
+    fun notifyFragmentDestroyed(){
+        newServerDetectedLiveData.postValue(null)
+        serverIsNotAvailableLiveData.postValue(null)
     }
 }

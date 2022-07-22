@@ -1,10 +1,13 @@
 package com.example.sea_battle.presentation.game_settings
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import com.example.sea_battle.R
 import com.example.sea_battle.databinding.FragmentGameSettingsBinding
@@ -27,6 +30,7 @@ class GameSettingsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentGameSettingsBinding.inflate(inflater, container, false)
+        navigator.setOnBackPressed(this::class.java, true){}
         return binding.root
     }
 
@@ -57,7 +61,7 @@ class GameSettingsFragment : Fragment() {
                     putBoolean("isPublic", isPublic)
                     putString("password", if (isPublic) null else password)
                 }
-            }, true)
+            })
         }
         binding.radioGroup.setOnCheckedChangeListener { _, i ->
             when (i) {

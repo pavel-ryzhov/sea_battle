@@ -38,6 +38,8 @@
     <string name="enemy_field">Enemy\'s field:</string>
     <string name="exit">Exit</string>
     <string name="play_again">Play again</string>
+    <string name="do_you_really_want_to_exit">Do you really want to exit?</string>
+    <string name="another_player_left_the_game">Another player left the game</string>
 
     <string-array name="coords">
         <item>A</item>

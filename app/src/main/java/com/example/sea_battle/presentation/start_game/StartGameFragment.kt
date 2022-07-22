@@ -1,12 +1,12 @@
 package com.example.sea_battle.presentation.start_game
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import com.example.sea_battle.MainActivity
 import com.example.sea_battle.R
@@ -14,6 +14,8 @@ import com.example.sea_battle.databinding.FragmentStartGameBinding
 import com.example.sea_battle.entities.Client
 import com.example.sea_battle.entities.Host
 import com.example.sea_battle.navigation.Navigator
+import com.example.sea_battle.presentation.dialogs.ConfirmActionDialog
+import com.example.sea_battle.presentation.dialogs.InfoDialog
 import com.example.sea_battle.presentation.playground.PlaygroundFragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -37,6 +39,29 @@ class StartGameFragment : Fragment() {
     ): View {
         needToCloseSocketOnExit = true
         binding = FragmentStartGameBinding.inflate(inflater, container, false)
+        navigator.setOnBackPressed(this::class.java, false) {
+            requireActivity().supportFragmentManager.apply {
+                if (viewModel.isOtherPlayerJoined(requireArguments().getBoolean("host", false))) {
+                    ConfirmActionDialog(requireActivity(),
+                        getString(R.string.do_you_really_want_to_exit),
+                        onConfirmed = {
+                            needToCloseSocketOnExit = false
+                            viewModel.postExit()
+                            popBackStack(
+                                getBackStackEntryAt(2).id,
+                                FragmentManager.POP_BACK_STACK_INCLUSIVE
+                            )
+                            (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
+                        }).show()
+                }else {
+                    popBackStack(
+                        getBackStackEntryAt(2).id,
+                        FragmentManager.POP_BACK_STACK_INCLUSIVE
+                    )
+                    (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
+                }
+            }
+        }
         return binding.root
     }
 
@@ -84,8 +109,10 @@ class StartGameFragment : Fragment() {
     private fun subscribeOnLiveData() {
         viewModel.apply {
             clientJoinedLiveData.observe(viewLifecycleOwner) {
-                client = it
-                start()
+                it?.let {
+                    client = it
+                    start()
+                }
             }
             userIsReadyLiveData.observe(viewLifecycleOwner) {
                 if (it) {
@@ -94,8 +121,14 @@ class StartGameFragment : Fragment() {
                         otherPlayerSocket =
                             if (!isHost) this@StartGameFragment.host.socket else client.socket
                     }, Bundle().apply {
-                        putString("otherPlayerName", if (!isHost) this@StartGameFragment.host.name else client.name)
-                        putInt("timeBound", if (!isHost) host.timeBound else requireArguments().getInt("timeBound"))
+                        putString(
+                            "otherPlayerName",
+                            if (!isHost) this@StartGameFragment.host.name else client.name
+                        )
+                        putInt(
+                            "timeBound",
+                            if (!isHost) host.timeBound else requireArguments().getInt("timeBound")
+                        )
                     }, true)
                     viewModel.setOtherPlayer(if (!isHost) this@StartGameFragment.host.socket else client.socket)
                     viewModel.notifyThisPlayerIsReadyToStart(binding.field.ships)
@@ -105,6 +138,13 @@ class StartGameFragment : Fragment() {
                         resources.getString(R.string.not_all_ships_are_arranged),
                         Toast.LENGTH_LONG
                     ).show()
+                }
+            }
+            otherPlayerExitedLiveData.observe(viewLifecycleOwner){
+                it?.let {
+                    InfoDialog(requireActivity(), getString(R.string.another_player_left_the_game)){
+                        requireActivity().onBackPressed()
+                    }.show()
                 }
             }
         }
@@ -118,8 +158,9 @@ class StartGameFragment : Fragment() {
         }
     }
 
-    override fun onStop() {
+    override fun onDestroy() {
         if (needToCloseSocketOnExit) viewModel.close()
-        super.onStop()
+        viewModel.notifyFragmentDestroyed()
+        super.onDestroy()
     }
 }

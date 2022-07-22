@@ -22,7 +22,7 @@ class StartGameViewModel @Inject constructor(
 
     val clientJoinedLiveData = serverService.clientJoinedLiveData
     val userIsReadyLiveData = MutableLiveData<Boolean>()
-//    val serverIsNotAvailableLiveData = ClientServiceImpl.serverIsNotAvailableLiveData
+    val otherPlayerExitedLiveData = gameService.otherPlayerExitedLiveData
 
     fun startServer(name: String, timeBound: Int, isPublic: Boolean, password: String?) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -30,7 +30,7 @@ class StartGameViewModel @Inject constructor(
         }
     }
 
-    fun setOtherPlayer(socket: Socket){
+    fun setOtherPlayer(socket: Socket) {
         gameService.setOtherPlayer(socket)
     }
 
@@ -41,7 +41,7 @@ class StartGameViewModel @Inject constructor(
         }
     }
 
-    fun notifyThisPlayerIsReadyToStart(ships: List<Ship>){
+    fun notifyThisPlayerIsReadyToStart(ships: List<Ship>) {
         viewModelScope.launch(Dispatchers.IO) {
             gameService.notifyThisPlayerIsReadyToStart(ships)
         }
@@ -57,10 +57,26 @@ class StartGameViewModel @Inject constructor(
             userIsReadyLiveData.postValue(ships.size == 10)
         }
     }
-    fun startListening(socket: Socket){
+
+    fun startListening(socket: Socket) {
         viewModelScope.launch {
             gameService.setOtherPlayer(socket)
             gameService.start()
         }
     }
+
+    fun isOtherPlayerJoined(isHost: Boolean) =
+        gameService.isJoined() && (if (isHost) serverService.isClientJoined() else clientService.isJoinedToServer())
+
+    fun postExit() {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameService.postExit()
+        }
+    }
+
+    fun notifyFragmentDestroyed(){
+        clientJoinedLiveData.postValue(null)
+        otherPlayerExitedLiveData.postValue(null)
+    }
+
 }

@@ -11,5 +11,16 @@ class SetExtensions {
            }
            return a == arrays.size
        }
+       fun MutableSet<IntArray>.addIntArray(intArray: IntArray){
+           if (!containsIntArray(intArray)){
+               add(intArray)
+           }
+       }
+       private fun Set<IntArray>.containsIntArray(intArray: IntArray): Boolean{
+           for (i in this){
+               if (intArray.contentEquals(i)) return true
+           }
+           return false
+       }
    }
 }

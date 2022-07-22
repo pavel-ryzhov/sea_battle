@@ -45,17 +45,20 @@ class MainActivity : AppCompatActivity() {
 
         val name = appPreferences.getName()
 
-        navigator.openFragment(if (name == null) AuthFragment() else GeneralFragment().apply { arguments = Bundle().apply { putString("name", name) } },  true)
-//        navigator.openFragment(PlaygroundFragment(), true)
+        navigator.openFragment(if (name == null) AuthFragment() else GeneralFragment(),  true)
+
+
+
     }
+    fun onBackPressedAppCompatActivity() = super.onBackPressed()
 
     override fun onBackPressed() {
-        println(supportFragmentManager.backStackEntryCount)
-        if (supportFragmentManager.backStackEntryCount <= 1) {
-            finish()
-        } else {
-            super.onBackPressed()
-        }
+//        if (supportFragmentManager.backStackEntryCount <= 1) {
+//            finish()
+//        } else {
+//            super.onBackPressed()
+//        }
+        navigator.doOnBackPressed(this::onBackPressedAppCompatActivity)
     }
 
     fun hideSystemUI() {

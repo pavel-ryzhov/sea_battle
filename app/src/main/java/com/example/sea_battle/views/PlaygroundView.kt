@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -15,6 +16,7 @@ import androidx.core.content.res.ResourcesCompat
 import com.example.sea_battle.R
 import com.example.sea_battle.data.services.game.GameService
 import com.example.sea_battle.entities.Ship
+import com.example.sea_battle.extensions.SetExtensions.Companion.addIntArray
 import com.example.sea_battle.extensions.SetExtensions.Companion.containsAllIntArrays
 import com.example.sea_battle.utils.Vibrator
 import kotlinx.coroutines.CoroutineScope
@@ -57,11 +59,11 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
                 if (turn == THIS_PLAYER_TURN) {
                     if (isClickInField(OTHER_PLAYER_FIELD, motionEvent.x, motionEvent.y)) {
                         val coords = getCoordsByLocation(motionEvent.x, motionEvent.y)
-                        if (!hits.containsAllIntArrays(setOf(coords))) {
+                        if (!crosses.containsAllIntArrays(setOf(coords))) {
                             CoroutineScope(Dispatchers.IO + Job()).launch(Dispatchers.IO) {
                                 gameService?.executeClick(coords.copyOfRange(1, 3))
                             }
-                            crosses.add(coords)
+                            crosses.addIntArray(coords)
                             val ship = getShipByCoords(
                                 OTHER_PLAYER_FIELD,
                                 coords.component2(),
@@ -306,65 +308,64 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
                 shipCells.add(intArrayOf(field, ship.x, ship.y + i))
             }
         }
-
         if (hits.containsAllIntArrays(shipCells)) {
             if (!ship.rotate) {
                 if (ship.y > 0) {
                     if (ship.x > 0) {
-                        crosses.add(intArrayOf(field, ship.x - 1, ship.y - 1))
+                        crosses.addIntArray(intArrayOf(field, ship.x - 1, ship.y - 1))
                     }
                     if (ship.x + ship.type - 1 < 9) {
-                        crosses.add(intArrayOf(field, ship.x + ship.type, ship.y - 1))
+                        crosses.addIntArray(intArrayOf(field, ship.x + ship.type, ship.y - 1))
                     }
                     for (i in 0 until ship.type) {
-                        crosses.add(intArrayOf(field, ship.x + i, ship.y - 1))
+                        crosses.addIntArray(intArrayOf(field, ship.x + i, ship.y - 1))
                     }
                 }
-                if (ship.y + ship.type - 1 < 9) {
+                if (ship.y < 9) {
                     if (ship.x > 0) {
-                        crosses.add(intArrayOf(field, ship.x - 1, ship.y + 1))
+                        crosses.addIntArray(intArrayOf(field, ship.x - 1, ship.y + 1))
                     }
                     if (ship.x + ship.type - 1 < 9) {
-                        crosses.add(intArrayOf(field, ship.x + ship.type, ship.y + 1))
+                        crosses.addIntArray(intArrayOf(field, ship.x + ship.type, ship.y + 1))
                     }
                     for (i in 0 until ship.type) {
-                        crosses.add(intArrayOf(field, ship.x + i, ship.y + 1))
+                        crosses.addIntArray(intArrayOf(field, ship.x + i, ship.y + 1))
                     }
                 }
                 if (ship.x > 0) {
-                    crosses.add(intArrayOf(field, ship.x - 1, ship.y))
+                    crosses.addIntArray(intArrayOf(field, ship.x - 1, ship.y))
                 }
                 if (ship.x + ship.type - 1 < 9) {
-                    crosses.add(intArrayOf(field, ship.x + ship.type, ship.y))
+                    crosses.addIntArray(intArrayOf(field, ship.x + ship.type, ship.y))
                 }
             } else {
                 if (ship.x > 0) {
                     if (ship.y > 0) {
-                        crosses.add(intArrayOf(field, ship.x - 1, ship.y - 1))
+                        crosses.addIntArray(intArrayOf(field, ship.x - 1, ship.y - 1))
                     }
                     if (ship.y + ship.type - 1 < 9) {
-                        crosses.add(intArrayOf(field, ship.x - 1, ship.y + ship.type))
+                        crosses.addIntArray(intArrayOf(field, ship.x - 1, ship.y + ship.type))
                     }
                     for (i in 0 until ship.type) {
-                        crosses.add(intArrayOf(field, ship.x - 1, ship.y + i))
+                        crosses.addIntArray(intArrayOf(field, ship.x - 1, ship.y + i))
                     }
                 }
-                if (ship.x + ship.type - 1 < 9) {
+                if (ship.x < 9) {
                     if (ship.y > 0) {
-                        crosses.add(intArrayOf(field, ship.x + 1, ship.y - 1))
+                        crosses.addIntArray(intArrayOf(field, ship.x + 1, ship.y - 1))
                     }
                     if (ship.y + ship.type - 1 < 9) {
-                        crosses.add(intArrayOf(field, ship.x + 1, ship.y + ship.type))
+                        crosses.addIntArray(intArrayOf(field, ship.x + 1, ship.y + ship.type))
                     }
                     for (i in 0 until ship.type) {
-                        crosses.add(intArrayOf(field, ship.x + 1, ship.y + i))
+                        crosses.addIntArray(intArrayOf(field, ship.x + 1, ship.y + i))
                     }
                 }
                 if (ship.y > 0) {
-                    crosses.add(intArrayOf(field, ship.x, ship.y - 1))
+                    crosses.addIntArray(intArrayOf(field, ship.x, ship.y - 1))
                 }
                 if (ship.y + ship.type - 1 < 9) {
-                    crosses.add(intArrayOf(field, ship.x, ship.y + ship.type))
+                    crosses.addIntArray(intArrayOf(field, ship.x, ship.y + ship.type))
                 }
             }
         }
@@ -601,18 +602,19 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
 
         gameService?.apply {
             clickLiveData.observeForever {
-                crosses.add(intArrayOf(THIS_PLAYER_FIELD, it.component1(), it.component2()))
-                val ship = getShipByCoords(THIS_PLAYER_FIELD, it.component1(), it.component2())
-                turnStartTime = System.currentTimeMillis()
-                if (ship != null) {
-                    hits.add(intArrayOf(THIS_PLAYER_FIELD, it.component1(), it.component2()))
-                    checkIfShipIsSunk(THIS_PLAYER_FIELD, ship)
-                    Vibrator.vibrate(context, 100)
-                } else {
-                    turn = (turn + 1) % 2
+                it?.let {
+                    crosses.addIntArray(intArrayOf(THIS_PLAYER_FIELD, it.component1(), it.component2()))
+                    val ship = getShipByCoords(THIS_PLAYER_FIELD, it.component1(), it.component2())
+                    turnStartTime = System.currentTimeMillis()
+                    if (ship != null) {
+                        hits.add(intArrayOf(THIS_PLAYER_FIELD, it.component1(), it.component2()))
+                        checkIfShipIsSunk(THIS_PLAYER_FIELD, ship)
+                        Vibrator.vibrate(context, 100)
+                    } else {
+                        turn = (turn + 1) % 2
+                    }
                 }
             }
-
         }
     }
 }

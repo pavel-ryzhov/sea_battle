@@ -6,9 +6,10 @@ import java.net.Socket
 
 abstract class GameService {
 
-    abstract val bothPlayersAreReadyLiveData: MutableLiveData<Int>
-    abstract val clickLiveData: MutableLiveData<IntArray>
-    abstract val gameFinishedLiveData: MutableLiveData<Pair<Int, List<Ship>>>
+    abstract val bothPlayersAreReadyLiveData: MutableLiveData<Int?>
+    abstract val clickLiveData: MutableLiveData<IntArray?>
+    abstract val gameFinishedLiveData: MutableLiveData<Pair<Int, List<Ship>>?>
+    abstract val otherPlayerExitedLiveData: MutableLiveData<Unit>
     abstract val otherPlayerShips: List<Ship>
     abstract val thisPlayerShips: List<Ship>
 
@@ -17,5 +18,7 @@ abstract class GameService {
     abstract fun finishGame(arg: Int)
     abstract fun interrupt()
     abstract fun setOtherPlayer(socket: Socket)
+    abstract fun postExit()
     abstract fun notifyThisPlayerIsReadyToStart(list: List<Ship>)
+    abstract fun isJoined(): Boolean
 }

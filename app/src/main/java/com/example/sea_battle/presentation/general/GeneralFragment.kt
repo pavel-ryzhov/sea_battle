@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.sea_battle.data.preferences.AppPreferences
 import com.example.sea_battle.presentation.auth.AuthFragment
 import com.example.sea_battle.databinding.FragmentGeneralBinding
 import com.example.sea_battle.navigation.Navigator
@@ -20,6 +22,8 @@ class GeneralFragment : Fragment() {
 
     @Inject
     lateinit var navigator: Navigator
+    @Inject
+    lateinit var preferences: AppPreferences
     private lateinit var binding: FragmentGeneralBinding
 
     override fun onCreateView(
@@ -28,11 +32,14 @@ class GeneralFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentGeneralBinding.inflate(inflater, container, false)
+        navigator.setOnBackPressed(this::class.java, false){
+            requireActivity().finish()
+        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.editTextName.setText(requireArguments().getString("name"))
+        binding.editTextName.setText(preferences.getName())
         binding.buttonChangeName.setOnClickListener {
             navigator.openFragment(AuthFragment(), true)
         }
@@ -42,13 +49,13 @@ class GeneralFragment : Fragment() {
         binding.buttonCreateGame.setOnClickListener {
             navigator.openFragment(GameSettingsFragment(), Bundle().apply {
                 putBoolean("host", true)
-                putString("name", requireArguments().getString("name"))
+                putString("name", preferences.getName())
             }, true)
         }
         binding.buttonJoinGame.setOnClickListener {
             navigator.openFragment(
                 ChooseGameFragment(),
-                Bundle().apply { putString("clientName", requireArguments().getString("name")) },
+                Bundle().apply { putString("clientName", preferences.getName()) },
                 true
             )
         }

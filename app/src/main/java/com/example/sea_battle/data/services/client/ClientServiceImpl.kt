@@ -52,7 +52,10 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
             val bufferedWriter = SpecialBufferedWriter(host.socket)
             val bufferedReader = SpecialBufferedReader(host.socket)
             bufferedWriter.writeStringAndFlush("start")
-            bufferedReader.readString(1000) == "start"
+            if (bufferedReader.readString(1000) == "start") {
+                isJoinedToServer = true
+                true
+            }else false
         }catch (e: SocketIsNotConnectedException){
             e.printStackTrace()
             serverIsNotAvailableLiveData.postValue(host)
@@ -60,16 +63,15 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
         }
     }
 
-    override val serverIsNotAvailableLiveData = MutableLiveData<Host>()
-    override val newServerDetectedLiveData = MutableLiveData<Host>()
-    override val netScanned = MutableLiveData<Unit>()
+    override val serverIsNotAvailableLiveData = MutableLiveData<Host?>()
+    override val newServerDetectedLiveData = MutableLiveData<Host?>()
 
     private val reachableAddresses: ArrayBlockingQueue<InetAddress> = ArrayBlockingQueue(10)
     private val hosts = mutableListOf<Host>()
     private var isInterrupted = false
+    private var isJoinedToServer = false
     private lateinit var executorService: ExecutorService
     private lateinit var address: String
-    private var atomicInteger = AtomicInteger(0)
 
 
     override fun findServers(clientName: String, nThreads: Int, nPorts: Int) {
@@ -89,7 +91,7 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
                 var portIsSelected = false
                 var startPort  = START_PORT
 
-                while (!portIsSelected && startPort  < START_PORT + nPorts * 5 && !isInterrupted){
+                while (!portIsSelected && startPort < START_PORT + nPorts * 5 && !isInterrupted){
                     val futures: ArrayList<Future<Socket?>> = ArrayList()
                     for (i in 0 until nPorts){
                         futures.add(executorService.submit<Socket?>{
@@ -110,9 +112,6 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
                     for (future in futures){
                         future.get()?.let {
                             portIsSelected = true
-                        }
-                        if (atomicInteger.incrementAndGet() == 256 + 5 * nPorts){
-                            netScanned.postValue(Unit)
                         }
                     }
                     startPort += nPorts
@@ -153,7 +152,10 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
     override fun close() {
         interrupt()
         hosts.forEach { it.socket.close() }
+        isJoinedToServer = false
     }
+
+    override fun isJoinedToServer() = isJoinedToServer
 
     override fun getAllDetectedServers(): List<Host> {
         synchronized(hosts){
@@ -168,7 +170,6 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
                     if(!isInterrupted) reachableAddresses.put(it)
                 }
             }
-            atomicInteger.incrementAndGet()
         }
     }
 }

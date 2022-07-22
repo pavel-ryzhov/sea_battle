@@ -1,8 +1,10 @@
 package com.example.sea_battle.data.services.game
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.sea_battle.entities.Ship
 import com.example.sea_battle.entities.Task
+import com.example.sea_battle.utils.SocketIsNotConnectedException
 import com.example.sea_battle.utils.SpecialBufferedReader
 import com.example.sea_battle.utils.SpecialBufferedWriter
 import com.example.sea_battle.views.PlaygroundView.Companion.OTHER_PLAYER_TURN
@@ -18,6 +20,8 @@ import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.net.Socket
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
@@ -31,6 +35,9 @@ class GameServiceImpl @Inject constructor() : GameService() {
         private const val FIRST_TURN_TAG = "firstTurn"
         private const val CLICK_TAG = "click"
         private const val GAME_FINISHED_TAG = "gameFinished"
+        private const val PLAYER_EXITED_TAG = "playerExited"
+
+        private val EMPTY_DATA = byteArrayOf()
     }
 
 
@@ -42,13 +49,14 @@ class GameServiceImpl @Inject constructor() : GameService() {
     private lateinit var socket: Socket
     private var areFirstShipsGot = false
     private var isInterrupted = false
-    private var firstTurn = -1
     private var gameFinished = false
+    private var firstTurn = -1
+    private var isJoined: Boolean = true
 
-
-    override val clickLiveData = MutableLiveData<IntArray>()
-    override val bothPlayersAreReadyLiveData = MutableLiveData<Int>()
-    override val gameFinishedLiveData = MutableLiveData<Pair<Int, List<Ship>>>()
+    override val clickLiveData = MutableLiveData<IntArray?>()
+    override val bothPlayersAreReadyLiveData = MutableLiveData<Int?>()
+    override val gameFinishedLiveData = MutableLiveData<Pair<Int, List<Ship>>?>()
+    override val otherPlayerExitedLiveData = MutableLiveData<Unit>()
 
     override fun executeClick(coords: IntArray) {
         bufferedWriter.writeTask(
@@ -59,11 +67,25 @@ class GameServiceImpl @Inject constructor() : GameService() {
         )
     }
 
+    override fun postExit() {
+        bufferedWriter.writeTask(Task(
+            PLAYER_EXITED_TAG,
+            EMPTY_DATA
+        ))
+    }
+
     override fun start() {
         isInterrupted = false
+        isJoined = true
         Thread {
-            while (!isInterrupted) {
-                Thread(ProcessTask(bufferedReader.readTask())).start()
+            try {
+                while (!isInterrupted) {
+                    Thread(ProcessTask(bufferedReader.readTask())).start()
+                }
+            }catch (e: SocketException){
+                isJoined = false
+            }catch (e: SocketIsNotConnectedException){
+                isJoined = false
             }
         }.start()
     }
@@ -71,6 +93,8 @@ class GameServiceImpl @Inject constructor() : GameService() {
     override fun interrupt() {
         isInterrupted = true
     }
+
+    override fun isJoined() = isJoined
 
     override fun setOtherPlayer(socket: Socket) {
         this.socket = socket
@@ -96,7 +120,7 @@ class GameServiceImpl @Inject constructor() : GameService() {
                 bufferedWriter.writeTask(Task(GAME_FINISHED_TAG, arg.toString().toByteArray()))
                 gameFinishedLiveData.postValue(Pair(arg, otherPlayerShips))
             }
-        }else gameFinished = true
+        } else gameFinished = true
     }
 
     private inner class ProcessTask(private val task: Task) : Runnable {
@@ -110,7 +134,6 @@ class GameServiceImpl @Inject constructor() : GameService() {
                     if (areFirstShipsGot) {
                         bothPlayersAreReadyLiveData.postValue(firstTurn)
                     } else {
-                        println(task.data.contentToString())
                         areFirstShipsGot = true
                         val ft = Math.random().roundToInt()
                         bufferedWriter.writeTask(
@@ -146,6 +169,12 @@ class GameServiceImpl @Inject constructor() : GameService() {
                             otherPlayerShips
                         )
                     )
+                }
+                PLAYER_EXITED_TAG -> {
+                    isJoined = false
+                    isInterrupted = true
+                    otherPlayerExitedLiveData.postValue(Unit)
+                    socket.close()
                 }
             }
         }

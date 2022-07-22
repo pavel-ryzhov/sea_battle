@@ -46,18 +46,27 @@ class PlaygroundFragment : Fragment() {
     private fun subscribeOnLiveData() {
         viewModel.apply {
             bothPlayersAreReadyLiveData.observe(viewLifecycleOwner) {
-                binding.apply {
-                    constraintLayoutLoading.visibility = View.GONE
-                    playground.apply {
-                        setFirstTurn(it)
-                        start()
-                        isEnabled = true
+                it?.let {
+                    binding.apply {
+                        constraintLayoutLoading.visibility = View.GONE
+                        playground.apply {
+                            setFirstTurn(it)
+                            start()
+                            isEnabled = true
+                        }
                     }
                 }
             }
             gameFinishedLiveData.observe(viewLifecycleOwner){
-                navigator.openFragment(GameResultFragment().apply { init(it) }, false)
+                it?.let {
+                    navigator.openFragment(GameResultFragment().apply { init(it) }, false)
+                }
             }
         }
+    }
+
+    override fun onDestroy() {
+        viewModel.notifyFragmentDestroyed()
+        super.onDestroy()
     }
 }

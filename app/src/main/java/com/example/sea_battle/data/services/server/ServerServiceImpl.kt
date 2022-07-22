@@ -19,16 +19,19 @@ import javax.inject.Singleton
 class ServerServiceImpl @Inject constructor() : ServerService() {
 
     companion object {
-        private const val START_PORT = 5000;
+        private const val START_PORT = 5000
     }
 
-    override val clientJoinedLiveData = MutableLiveData<Client>()
+    override val clientJoinedLiveData = MutableLiveData<Client?>()
 
     private val verifiedClients = mutableListOf<Socket>()
     private var isInterrupted = false
+    private var isClientJoined = false
 
     override fun startServer(name: String, timeBound: Int, isPublic: Boolean, password: String?) {
         var port = START_PORT
+        isClientJoined = false
+        isInterrupted = false
         while (!isInterrupted) {
             val serverSocket = ServerSocket(port, 0, ClientServiceImpl.getCurrentIp())
             try {
@@ -79,6 +82,8 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
         return true
     }
 
+    override fun isClientJoined() = isClientJoined
+
     override fun interrupt() {
         isInterrupted = true
     }
@@ -98,6 +103,7 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
                     interrupt()
                 }
                 bufferedWriter.writeStringAndFlush("start")
+                isClientJoined = true
             }catch (e: IOException){
                 e.printStackTrace()
             }
