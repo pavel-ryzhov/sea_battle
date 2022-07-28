@@ -36,14 +36,13 @@ class JoinPrivateGameDialog(context: Context, val navigator: Navigator, val view
                     if (host.password == editTextPassword.text.toString()) {
                         hide()
                         CoroutineScope(Dispatchers.IO + Job()).launch(Dispatchers.IO) {
-                            if (viewModel.notifyClientJoinedGame(host))
+                            if (viewModel.notifyClientJoinedGame(host)) {
                                 navigator.openFragment(
                                     StartGameFragment().also { it.setHost(host) },
-                                    Bundle(),
-                                    true
+                                    Bundle()
                                 )
-                            else
-                                viewModel.serverIsNotAvailableLiveData.postValue(host)
+                                viewModel.interrupt()
+                            }
                         }
                     } else {
                         Toast.makeText(
@@ -52,9 +51,7 @@ class JoinPrivateGameDialog(context: Context, val navigator: Navigator, val view
                             Toast.LENGTH_LONG
                         ).show()
                     }
-
             }
         }
-
     }
 }

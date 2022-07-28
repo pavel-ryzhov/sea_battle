@@ -1,6 +1,7 @@
 package com.example.sea_battle.presentation.start_game
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +31,7 @@ class StartGameFragment : Fragment() {
     private lateinit var client: Client
     private val viewModel: StartGameViewModel by viewModels()
     private var isHost = false
+    private var gameInited = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,17 +46,12 @@ class StartGameFragment : Fragment() {
                         getString(R.string.do_you_really_want_to_exit),
                         onConfirmed = {
                             viewModel.postExit()
-                            popBackStack(
-                                getBackStackEntryAt(2).id,
-                                FragmentManager.POP_BACK_STACK_INCLUSIVE
-                            )
+                            navigator.popBackStack(StartGameFragment::class.java)
                             (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
                         }).show()
-                }else {
-                    popBackStack(
-                        getBackStackEntryAt(2).id,
-                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                    )
+                } else {
+                    viewModel.close()
+                    navigator.popBackStack(StartGameFragment::class.java)
                     (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
                 }
             }
@@ -66,19 +63,21 @@ class StartGameFragment : Fragment() {
         (requireActivity() as MainActivity).hideSystemUI()
         subscribeOnLiveData()
         requireArguments().let {
+            gameInited = it.getBoolean("gameInited", false)
             if (it.getBoolean("host", false)) {
                 isHost = true
                 binding.textView.text =
                     resources.getString(R.string.wait_until_another_player_joins)
-                viewModel.startServer(
-                    it.getString("name", ""),
-                    it.getInt("timeBound"),
-                    it.getBoolean("isPublic", true),
-                    it.getString("password")
-                )
+                if (!gameInited)
+                    viewModel.startServer(
+                        it.getString("name", ""),
+                        it.getInt("timeBound"),
+                        it.getBoolean("isPublic", true),
+                        it.getString("password")
+                    )
             }
         }
-        setEnabled(false)
+        setEnabled(gameInited)
 
         binding.apply {
             buttonBack.setOnClickListener {
@@ -89,7 +88,11 @@ class StartGameFragment : Fragment() {
             }
         }
 
-        if (!isHost) {
+        if (gameInited) {
+            viewModel.restart()
+        }
+
+        if (!isHost && !gameInited) {
             start()
         }
     }
@@ -107,26 +110,31 @@ class StartGameFragment : Fragment() {
         viewModel.apply {
             clientJoinedLiveData.observe(viewLifecycleOwner) {
                 it?.let {
-                    client = it
-                    start()
+                    if (!gameInited) {
+                        client = it
+                        start()
+                        Log.d("mmmm", "clientJoinedLiveData")
+                        viewModel.notifyClientJoined(it)
+                    }
                 }
             }
             userIsReadyLiveData.observe(viewLifecycleOwner) {
                 if (it) {
                     navigator.openFragment(PlaygroundFragment().apply {
-                        otherPlayerSocket =
-                            if (!isHost) this@StartGameFragment.host.socket else client.socket
-                    }, Bundle().apply {
-                        putString(
-                            "otherPlayerName",
-                            if (!isHost) this@StartGameFragment.host.name else client.name
-                        )
-                        putInt(
-                            "timeBound",
-                            if (!isHost) host.timeBound else requireArguments().getInt("timeBound")
-                        )
-                    }, true)
-                    viewModel.setOtherPlayer(if (!isHost) this@StartGameFragment.host.socket else client.socket)
+                    }, requireArguments().apply {
+                        if (!gameInited) {
+                            putString(
+                                "otherPlayerName",
+                                if (!isHost) this@StartGameFragment.host.name else client.name
+                            )
+                            putInt(
+                                "timeBound",
+                                if (!isHost) host.timeBound else requireArguments().getInt("timeBound")
+                            )
+                        }
+                    })
+                    if (!gameInited)
+                        viewModel.setOtherPlayer(if (!isHost) this@StartGameFragment.host.socket else client.socket)
                     viewModel.notifyThisPlayerIsReadyToStart(binding.field.ships)
                 } else {
                     Toast.makeText(
@@ -136,16 +144,19 @@ class StartGameFragment : Fragment() {
                     ).show()
                 }
             }
-            otherPlayerExitedLiveData.observe(viewLifecycleOwner){
+            otherPlayerExitedLiveData.observe(viewLifecycleOwner) {
                 it?.let {
-                    InfoDialog(requireActivity(), getString(R.string.another_player_left_the_game)){
+                    InfoDialog(
+                        requireActivity(),
+                        getString(R.string.another_player_left_the_game)
+                    ) {
                         requireActivity().onBackPressed()
                     }.show()
                 }
             }
-            connectionErrorLiveData.observe(viewLifecycleOwner){
+            connectionErrorLiveData.observe(viewLifecycleOwner) {
                 it?.let {
-                    InfoDialog(requireActivity(), getString(R.string.connection_error)){
+                    InfoDialog(requireActivity(), getString(R.string.connection_error)) {
                         requireActivity().onBackPressed()
                     }.show()
                 }
@@ -162,7 +173,8 @@ class StartGameFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        viewModel.interrupt()
+        if (!gameInited)
+            viewModel.interrupt()
         viewModel.notifyFragmentDestroyed()
         super.onDestroy()
     }

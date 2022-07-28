@@ -1,5 +1,8 @@
 package com.example.sea_battle.extensions
 
+import com.example.sea_battle.entities.Host
+import java.net.InetAddress
+
 class ListExtensions {
     companion object{
         fun List<Char>.endsWithString(string: String): Boolean{
@@ -31,6 +34,13 @@ class ListExtensions {
                     bytes.removeLast()
             }
             return bytes
+        }
+        fun List<Host>.containsAddress(inetAddress: InetAddress): Boolean{
+            for (i in this){
+                if (i.socket.inetAddress.address.contentEquals(inetAddress.address))
+                    return true
+            }
+            return false
         }
     }
 }

@@ -42,6 +42,9 @@
     <string name="another_player_left_the_game">Another player left the game</string>
     <string name="apply">Apply</string>
     <string name="connection_error">Connection error!</string>
+    <string name="another_player_exited">Another player exited</string>
+    <string name="another_player_want_to_play_again">Another player want to play again</string>
+    <string name="play">Play</string>
 
     <string-array name="coords">
         <item>A</item>

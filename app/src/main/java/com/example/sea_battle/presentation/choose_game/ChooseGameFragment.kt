@@ -63,7 +63,7 @@ class ChooseGameFragment : Fragment() {
             serverIsNotAvailableLiveData.observe(viewLifecycleOwner) {
                 it?.let {
                     InfoDialog(
-                        requireContext(),
+                        requireActivity(),
                         resources.getString(R.string.server_is_not_available)
                     ) {
                         recyclerAdapter.removeItem(it)
@@ -83,11 +83,10 @@ class ChooseGameFragment : Fragment() {
                     if (viewModel.notifyClientJoinedGame(host)) {
                         navigator.openFragment(
                             StartGameFragment().also { it.setHost(host) },
-                            Bundle(),
-                            true
+                            Bundle().apply { putInt("timeBound", host.timeBound) }
                         )
-                    } else
-                        viewModel.serverIsNotAvailableLiveData.postValue(host)
+                        viewModel.interrupt()
+                    }
                 }
             }
         }

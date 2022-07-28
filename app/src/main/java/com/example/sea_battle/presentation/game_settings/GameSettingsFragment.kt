@@ -30,7 +30,7 @@ class GameSettingsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentGameSettingsBinding.inflate(inflater, container, false)
-        navigator.setOnBackPressed(this::class.java, true){}
+        navigator.setOnBackPressed(this::class.java, true)
         return binding.root
     }
 
@@ -53,15 +53,14 @@ class GameSettingsFragment : Fragment() {
             ) {
                 return@setOnClickListener
             }
-            navigator.openFragment(StartGameFragment(), Bundle().apply {
-                requireArguments().let {
-                    putBoolean("host", it.getBoolean("host"))
-                    putString("name", it.getString("name"))
+            navigator.openFragment(StartGameFragment(),
+                requireArguments().apply {
+                    putBoolean("gameInited", false)
                     putInt("timeBound", timeBound.toInt())
                     putBoolean("isPublic", isPublic)
                     putString("password", if (isPublic) null else password)
                 }
-            })
+            )
         }
         binding.radioGroup.setOnCheckedChangeListener { _, i ->
             when (i) {

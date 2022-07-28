@@ -1,26 +1,26 @@
 package com.example.sea_battle.data.services.client
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.sea_battle.BuildConfig
 import com.example.sea_battle.entities.Host
-import com.example.sea_battle.utils.SocketIsNotConnectedException
+import com.example.sea_battle.extensions.ListExtensions.Companion.containsAddress
 import com.example.sea_battle.utils.SpecialBufferedReader
 import com.example.sea_battle.utils.SpecialBufferedWriter
 import java.io.IOException
 import java.net.*
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.ThreadPoolExecutor
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ClientServiceImpl @Inject constructor() : ClientService() {
 
-    companion object{
+    companion object {
         private const val START_PORT = 5000
         fun getCurrentIp(): InetAddress? {
             try {
@@ -47,16 +47,19 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
 
     }
 
-    override fun notifyClientJoinedGame(host: Host): Boolean{
+    override fun notifyClientJoinedGame(host: Host): Boolean {
         return try {
             val bufferedWriter = SpecialBufferedWriter(host.socket)
             val bufferedReader = SpecialBufferedReader(host.socket)
             bufferedWriter.writeStringAndFlush("start")
-            if (bufferedReader.readString(1000) == "start") {
+            if (bufferedReader.readString(3000) == "start") {
                 isJoinedToServer = true
                 true
-            }else false
-        }catch (e: SocketIsNotConnectedException){
+            } else {
+                serverIsNotAvailableLiveData.postValue(host)
+                false
+            }
+        } catch (e: Exception) {
             e.printStackTrace()
             serverIsNotAvailableLiveData.postValue(host)
             false
@@ -70,31 +73,40 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
     private val hosts = mutableListOf<Host>()
     private var isInterrupted = false
     private var isJoinedToServer = false
-    private lateinit var executorService: ExecutorService
+    private lateinit var executorService: ThreadPoolExecutor
     private lateinit var address: String
 
 
     override fun findServers(clientName: String, nThreads: Int, nPorts: Int) {
+        hosts.clear()
         isInterrupted = false
         val localhost: String = getCurrentIp()?.hostAddress ?: return
         address = localhost.substring(0, localhost.lastIndexOf('.'))
 
-        executorService = Executors.newFixedThreadPool(nThreads)
+        executorService = Executors.newFixedThreadPool(nThreads) as ThreadPoolExecutor
 
-        for (i in 0..255){
-            executorService.submit(IsAddressReachable(i))
-        }
+        checkReachableAddresses()
 
-        while (!isInterrupted){
+        Thread {
+            while (!isInterrupted) {
+                if (executorService.activeCount == 0) {
+                    checkReachableAddresses()
+                }
+                Thread.sleep(3000)
+            }
+        }.start()
+
+        while (!isInterrupted) {
             val inetAddress = reachableAddresses.take()
-            Thread{
+            Thread {
                 var portIsSelected = false
-                var startPort  = START_PORT
+                var startPort = START_PORT
 
-                while (!portIsSelected && startPort < START_PORT + nPorts * 5 && !isInterrupted){
+                while (!portIsSelected && startPort < START_PORT + nPorts * 5 && !isInterrupted) {
                     val futures: ArrayList<Future<Socket?>> = ArrayList()
-                    for (i in 0 until nPorts){
-                        futures.add(executorService.submit<Socket?>{
+                    for (i in 0 until nPorts) {
+                        Log.d("ssss", "adding future...")
+                        futures.add(executorService.submit<Socket?> {
                             try {
                                 val socket = Socket()
                                 socket.connect(InetSocketAddress(inetAddress, startPort + i), 5000)
@@ -104,12 +116,12 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
                                     socket.close()
                                     null
                                 }
-                            }catch (e: IOException){
+                            } catch (e: IOException) {
                                 return@submit null
                             }
                         })
                     }
-                    for (future in futures){
+                    for (future in futures) {
                         future.get()?.let {
                             portIsSelected = true
                         }
@@ -118,7 +130,12 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
                 }
             }.start()
         }
+    }
 
+    private fun checkReachableAddresses() {
+        for (i in 0..255) {
+            executorService.submit(IsAddressReachable(i))
+        }
     }
 
     override fun verifyServer(clientName: String, socket: Socket): Boolean {
@@ -131,14 +148,21 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
             val timeBound = bufferedReader.readString(3000).toInt()
             val isPublic = bufferedReader.readString(3000).toBoolean()
             var password: String? = null
-            if (!isPublic){
+            if (!isPublic) {
                 password = bufferedReader.readString(3000)
             }
             val bufferedWriter = SpecialBufferedWriter(socket)
             bufferedWriter.writeString(BuildConfig.VERSION_CODE.toString())
             bufferedWriter.writeStringAndFlush(clientName)
-            if (!isInterrupted) newServerDetectedLiveData.postValue(Host(name, timeBound, isPublic, password, socket))
-        }catch (e: IOException){
+            if (!isInterrupted) {
+                val host = Host(name, timeBound, isPublic, password, socket)
+
+                synchronized(hosts) {
+                    hosts.add(host)
+                }
+                newServerDetectedLiveData.postValue(host)
+            }
+        } catch (e: IOException) {
             e.printStackTrace()
             return false
         }
@@ -158,16 +182,16 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
     override fun isJoinedToServer() = isJoinedToServer
 
     override fun getAllDetectedServers(): List<Host> {
-        synchronized(hosts){
+        synchronized(hosts) {
             return hosts.toList()
         }
     }
 
-    private inner class IsAddressReachable(private val addr: Int): Runnable{
+    private inner class IsAddressReachable(private val addr: Int) : Runnable {
         override fun run() {
             InetAddress.getByName("$address.$addr").let {
-                if (it.isReachable(3000)){
-                    if(!isInterrupted) reachableAddresses.put(it)
+                if (it.isReachable(3000) && !hosts.containsAddress(it)) {
+                    if (!isInterrupted) reachableAddresses.put(it)
                 }
             }
         }

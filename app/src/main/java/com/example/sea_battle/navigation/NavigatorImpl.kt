@@ -2,44 +2,40 @@ package com.example.sea_battle.navigation
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
+import androidx.fragment.app.FragmentManager
 import com.example.sea_battle.R
 import javax.inject.Singleton
 
 @Singleton
 class NavigatorImpl(context: Context) : Navigator {
     private val supportFragmentManager = (context as AppCompatActivity).supportFragmentManager
-    companion object{
-        private val onBackPressedActions: MutableMap<Class<*>, Pair<Boolean, Runnable>> = mutableMapOf()
+
+    companion object {
+        private val onBackPressedActions: MutableMap<Class<*>, Pair<Boolean, Runnable>> =
+            mutableMapOf()
     }
 
-    override fun openFragment(fragment: Fragment, addToBackStack: Boolean, inAnimation: Boolean) {
-        supportFragmentManager.commit {
-            if (inAnimation) {
-                setCustomAnimations(
-                    R.anim.slide_in,
-                    R.anim.fade_out,
-                    R.anim.fade_in,
-                    R.anim.slide_out
-                )
-            }else{
-                setCustomAnimations(
-                    R.anim.slide_out,
-                    R.anim.fade_in,
-                    R.anim.fade_out,
-                    R.anim.slide_in
-                )
-            }
-            replace(R.id.fragmentContainer, fragment, fragment::class.java.toString())
-            if (addToBackStack) addToBackStack(fragment::class.java.toString())
+    override fun openFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction().apply {
+            setCustomAnimations(
+                R.anim.slide_in,
+                R.anim.fade_out,
+                R.anim.fade_in,
+                R.anim.slide_out
+            )
+            replace(R.id.fragmentContainer, fragment, fragment::class.java.name)
+            addToBackStack(fragment::class.java.name)
+            commit()
         }
     }
 
-    override fun openFragment(fragment: Fragment, args: Bundle, addToBackStack: Boolean, inAnimation: Boolean) {
-        openFragment(fragment.apply { arguments = args }, addToBackStack, inAnimation)
+    override fun openFragment(
+        fragment: Fragment,
+        args: Bundle
+    ) {
+        openFragment(fragment.apply { arguments = args })
     }
 
     override fun doOnBackPressed(defaultAction: Runnable) {
@@ -56,9 +52,32 @@ class NavigatorImpl(context: Context) : Navigator {
         } ?: defaultAction.run()
     }
 
+    override fun popBackStack(vararg clazz: Class<out Fragment>) {
+        for (i in clazz) {
+            supportFragmentManager.popBackStack(i.name, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        }
+    }
+
+    override fun popBackStack(ids: IntRange) {
+        for (i in ids) {
+            supportFragmentManager.popBackStack(
+                supportFragmentManager.getBackStackEntryAt(i).id,
+                FragmentManager.POP_BACK_STACK_INCLUSIVE
+            )
+        }
+    }
+
+    override fun popBackStack(index: Int) {
+        supportFragmentManager.popBackStack(
+            supportFragmentManager.getBackStackEntryAt(index).id,
+            FragmentManager.POP_BACK_STACK_INCLUSIVE
+        )
+    }
+
     override fun setOnBackPressed(clazz: Class<*>, doBackPress: Boolean, action: Runnable) {
         onBackPressedActions[clazz] = Pair(doBackPress, action)
     }
+
 
     override fun getVisibleFragment(): Fragment? {
         for (fragment in supportFragmentManager.fragments) {

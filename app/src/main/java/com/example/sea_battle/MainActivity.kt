@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
 
         val name = appPreferences.getName()
 
-        navigator.openFragment(if (name == null) AuthFragment() else GeneralFragment(),  true)
+        navigator.openFragment(if (name == null) AuthFragment() else GeneralFragment())
 
 
 

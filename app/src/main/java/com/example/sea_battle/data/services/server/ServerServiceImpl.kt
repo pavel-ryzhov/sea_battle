@@ -1,6 +1,5 @@
 package com.example.sea_battle.data.services.server
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.sea_battle.BuildConfig
 import com.example.sea_battle.data.services.client.ClientServiceImpl
@@ -36,12 +35,12 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
             val serverSocket = ServerSocket(port, 0, ClientServiceImpl.getCurrentIp())
             try {
                 val socket = serverSocket.apply {
-                    Log.d("ssss", this.toString())
-                    soTimeout = 3000 }.accept()
+                    soTimeout = 3000
+                }.accept()
 
-                Thread{
+                Thread {
                     if (verifyUser(name, timeBound, isPublic, password, socket)) {
-                        synchronized(verifiedClients){
+                        synchronized(verifiedClients) {
                             verifiedClients.add(socket)
                         }
                     } else {
@@ -54,13 +53,19 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
                 port++
             } catch (e: IOException) {
                 e.printStackTrace()
-            }finally {
+            } finally {
                 serverSocket.close()
             }
         }
     }
 
-    override fun verifyUser(name: String, timeBound: Int, isPublic: Boolean, password: String?, socket: Socket): Boolean {
+    override fun verifyUser(
+        name: String,
+        timeBound: Int,
+        isPublic: Boolean,
+        password: String?,
+        socket: Socket
+    ): Boolean {
         try {
             val bufferedWriter = SpecialBufferedWriter(socket)
             val bufferedReader = SpecialBufferedReader(socket)
@@ -68,7 +73,7 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
             bufferedWriter.writeString(name)
             bufferedWriter.writeString(timeBound.toString())
             bufferedWriter.writeStringAndFlush(isPublic.toString())
-            if (!isPublic){
+            if (!isPublic) {
                 bufferedWriter.writeStringAndFlush(password!!)
             }
             if (bufferedReader.readString(3000) != BuildConfig.VERSION_CODE.toString()) {
@@ -82,6 +87,14 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
         return true
     }
 
+    override fun notifyClientJoined(client: Client) {
+        for (socket in verifiedClients) {
+            if (!socket.inetAddress.address.contentEquals(client.socket.inetAddress.address)) {
+                socket.close()
+            }
+        }
+    }
+
     override fun isClientJoined() = isClientJoined
 
     override fun interrupt() {
@@ -93,18 +106,18 @@ class ServerServiceImpl @Inject constructor() : ServerService() {
         verifiedClients.forEach { it.close() }
     }
 
-    private inner class PrepareClient(private val client: Client): Runnable{
+    private inner class PrepareClient(private val client: Client) : Runnable {
         override fun run() {
             try {
                 val bufferedReader = SpecialBufferedReader(client.socket)
                 val bufferedWriter = SpecialBufferedWriter(client.socket)
-                if (bufferedReader.readString() == "start"){
+                if (bufferedReader.readString() == "start") {
                     if (!isInterrupted) clientJoinedLiveData.postValue(client)
                     interrupt()
                 }
                 bufferedWriter.writeStringAndFlush("start")
                 isClientJoined = true
-            }catch (e: IOException){
+            } catch (e: IOException) {
                 e.printStackTrace()
             }
         }

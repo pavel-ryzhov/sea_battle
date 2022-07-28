@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.sea_battle.data.services.client.ClientService
 import com.example.sea_battle.data.services.game.GameService
 import com.example.sea_battle.data.services.server.ServerService
+import com.example.sea_battle.entities.Client
 import com.example.sea_battle.entities.Ship
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,8 @@ class StartGameViewModel @Inject constructor(
         }
     }
 
+    fun restart() = gameService.restart()
+
     fun close() {
         serverService.close()
         clientService.close()
@@ -78,5 +81,7 @@ class StartGameViewModel @Inject constructor(
         otherPlayerExitedLiveData.postValue(null)
         connectionErrorLiveData.postValue(null)
     }
-
+    fun notifyClientJoined(client: Client){
+        serverService.notifyClientJoined(client)
+    }
 }

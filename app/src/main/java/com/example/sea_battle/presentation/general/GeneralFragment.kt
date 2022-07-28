@@ -41,22 +41,21 @@ class GeneralFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.editTextName.setText(preferences.getName())
         binding.buttonChangeName.setOnClickListener {
-            navigator.openFragment(AuthFragment(), true)
+            navigator.openFragment(AuthFragment())
         }
         binding.buttonRules.setOnClickListener {
-            navigator.openFragment(RulesFragment(), true)
+            navigator.openFragment(RulesFragment())
         }
         binding.buttonCreateGame.setOnClickListener {
             navigator.openFragment(GameSettingsFragment(), Bundle().apply {
                 putBoolean("host", true)
                 putString("name", preferences.getName())
-            }, true)
+            })
         }
         binding.buttonJoinGame.setOnClickListener {
             navigator.openFragment(
                 ChooseGameFragment(),
                 Bundle().apply { putString("clientName", preferences.getName()) },
-                true
             )
         }
     }

@@ -32,6 +32,8 @@ class GameServiceImpl @Inject constructor() : GameService() {
         private const val CLICK_TAG = "click"
         private const val GAME_FINISHED_TAG = "gameFinished"
         private const val PLAYER_EXITED_TAG = "playerExited"
+        private const val PLAYER_EXITED_AFTER_GAME_RESULT_TAG = "playerExitedAfterGameResult"
+        private const val PLAY_AGAIN_TAG = "playAgain"
 
         private val EMPTY_DATA = byteArrayOf()
     }
@@ -47,14 +49,18 @@ class GameServiceImpl @Inject constructor() : GameService() {
     private var isInterrupted = false
     private var gameFinished = false
     private var firstTurn = -1
-    private var isJoined: Boolean = true
+    private var isJoined = true
     private var connectionErrorExpected = false
+    private var playAgain = false
 
     override val clickLiveData = MutableLiveData<IntArray?>()
     override val bothPlayersAreReadyLiveData = MutableLiveData<Int?>()
     override val gameFinishedLiveData = MutableLiveData<Pair<Int, List<Ship>>?>()
     override val otherPlayerExitedLiveData = MutableLiveData<Unit>()
+    override val otherPlayerExitedAfterGameResultLiveData = MutableLiveData<Unit>()
     override val connectionErrorLiveData = MutableLiveData<Unit>()
+    override val playAgainLiveData = MutableLiveData<Unit>()
+    override val anotherPlayerWannaPlayAgainLiveData = MutableLiveData<Unit>()
 
     override fun executeClick(coords: IntArray) {
         bufferedWriter.writeTask(
@@ -65,6 +71,18 @@ class GameServiceImpl @Inject constructor() : GameService() {
         )
     }
 
+    override fun notifyThisPlayerWannaPlayAgain() {
+        bufferedWriter.writeTask(Task(
+            PLAY_AGAIN_TAG,
+            EMPTY_DATA
+        ))
+        if (playAgain){
+            playAgainLiveData.postValue(Unit)
+        }else{
+            playAgain = true
+        }
+    }
+
     override fun postExit() {
         bufferedWriter.writeTask(Task(
             PLAYER_EXITED_TAG,
@@ -73,11 +91,21 @@ class GameServiceImpl @Inject constructor() : GameService() {
         connectionErrorExpected = true
     }
 
+    override fun postExitAfterGameResult() {
+        bufferedWriter.writeTask(Task(
+            PLAYER_EXITED_AFTER_GAME_RESULT_TAG,
+            EMPTY_DATA
+        ))
+        connectionErrorExpected = true
+    }
+
     override fun start() {
+        playAgain = false
         areFirstShipsGot = false
         connectionErrorExpected = false
         isInterrupted = false
         isJoined = true
+        gameFinished = false
         Thread {
             try {
                 while (!isInterrupted) {
@@ -117,6 +145,15 @@ class GameServiceImpl @Inject constructor() : GameService() {
         } else {
             areFirstShipsGot = true
         }
+    }
+
+    override fun restart() {
+        playAgain = false
+        areFirstShipsGot = false
+        connectionErrorExpected = false
+        isInterrupted = false
+        isJoined = true
+        gameFinished = false
     }
 
     override fun finishGame(arg: Int) {
@@ -181,6 +218,21 @@ class GameServiceImpl @Inject constructor() : GameService() {
                     isInterrupted = true
                     otherPlayerExitedLiveData.postValue(Unit)
                     socket.close()
+                }
+                PLAYER_EXITED_AFTER_GAME_RESULT_TAG -> {
+                    connectionErrorExpected = true
+                    isJoined = false
+                    isInterrupted = true
+                    otherPlayerExitedAfterGameResultLiveData.postValue(Unit)
+                    socket.close()
+                }
+                PLAY_AGAIN_TAG -> {
+                    if (playAgain){
+                        playAgainLiveData.postValue(Unit)
+                    }else{
+                        playAgain = true
+                        anotherPlayerWannaPlayAgainLiveData.postValue(Unit)
+                    }
                 }
             }
         }

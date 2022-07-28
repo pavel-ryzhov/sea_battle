@@ -1,7 +1,6 @@
 package com.example.sea_battle.presentation.playground
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import com.example.sea_battle.navigation.Navigator
 import com.example.sea_battle.presentation.dialogs.ConfirmActionDialog
 import com.example.sea_battle.presentation.dialogs.InfoDialog
 import com.example.sea_battle.presentation.game_result.GameResultFragment
+import com.example.sea_battle.presentation.start_game.StartGameFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.net.Socket
 import javax.inject.Inject
@@ -25,7 +25,6 @@ class PlaygroundFragment : Fragment() {
     @Inject
     lateinit var navigator: Navigator
     private lateinit var binding: FragmentPlaygroundBinding
-    lateinit var otherPlayerSocket: Socket
     private val viewModel: PlaygroundViewModel by viewModels()
 
 
@@ -74,7 +73,12 @@ class PlaygroundFragment : Fragment() {
             }
             gameFinishedLiveData.observe(viewLifecycleOwner) {
                 it?.let {
-                    navigator.openFragment(GameResultFragment().apply { init(it) }, false)
+                    navigator.openFragment(
+                        GameResultFragment().apply { init(it) },
+                        requireArguments().apply {
+                            putBoolean("gameInited", true)
+                        }
+                    )
                 }
             }
             otherPlayerExitedLiveData.observe(viewLifecycleOwner) {
@@ -96,18 +100,20 @@ class PlaygroundFragment : Fragment() {
             }
         }
     }
-    private fun exitFragment(){
+
+    private fun exitFragment() {
         requireActivity().apply {
-            supportFragmentManager.let {
-                it.popBackStack(
-                    it.getBackStackEntryAt(3).id,
-                    FragmentManager.POP_BACK_STACK_INCLUSIVE
-                )
-                it.popBackStack(
-                    it.getBackStackEntryAt(2).id,
-                    FragmentManager.POP_BACK_STACK_INCLUSIVE
-                )
-            }
+//            supportFragmentManager.let {
+//                it.popBackStack(
+//                    it.getBackStackEntryAt(3).id,
+//                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+//                )
+//                it.popBackStack(
+//                    it.getBackStackEntryAt(2).id,
+//                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+//                )
+//            }
+            navigator.popBackStack(PlaygroundFragment::class.java, StartGameFragment::class.java)
             (this as MainActivity).onBackPressedAppCompatActivity()
         }
     }
@@ -115,5 +121,10 @@ class PlaygroundFragment : Fragment() {
     override fun onDestroy() {
         viewModel.notifyFragmentDestroyed()
         super.onDestroy()
+    }
+
+    override fun onStop() {
+        viewModel.gameService.clickLiveData.postValue(null)
+        super.onStop()
     }
 }

@@ -11,11 +11,14 @@ class SpecialBufferedReader(private val socket: Socket) {
     private val inputStream = socket.getInputStream()
 
     fun readString(timeout: Int = 0): String {
+        socket.soTimeout = timeout
         try {
             val bytes = mutableListOf<Byte>()
             while (!bytes.byteListEndsWithString("###")) {
-                socket.soTimeout = timeout
-                bytes.add(inputStream.read().toByte())
+                val b = inputStream.read().toByte()
+                if (b == (-1).toByte())
+                    throw SocketIsNotConnectedException()
+                else bytes.add(b)
             }
             return String(bytes.toByteArray()).removeGrids()
         } catch (e: SocketTimeoutException) {

@@ -14,6 +14,7 @@ abstract class ServerService{
     abstract fun close()
     abstract fun startServer(name: String, timeBound: Int, isPublic: Boolean, password: String?)
     abstract fun isClientJoined(): Boolean
+    abstract fun notifyClientJoined(client: Client)
 
     protected abstract fun verifyUser(name: String, timeBound: Int, isPublic: Boolean, password: String?, socket: Socket) : Boolean
 }

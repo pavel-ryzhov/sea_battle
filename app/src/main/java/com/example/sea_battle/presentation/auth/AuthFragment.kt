@@ -53,7 +53,7 @@ class AuthFragment : Fragment(){
         viewModel.apply {
             nameIsCorrectLiveData.observe(viewLifecycleOwner){
                 if (executeLiveData) {
-                    navigator.openFragment(GeneralFragment(), Bundle().apply { putString("name", it) }, true)
+                    navigator.openFragment(GeneralFragment(), Bundle().apply { putString("name", it) })
                     executeLiveData = false
                 }
             }
