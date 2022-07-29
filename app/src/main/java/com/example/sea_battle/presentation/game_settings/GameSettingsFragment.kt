@@ -5,9 +5,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.view.animation.AnimationUtils
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import com.example.sea_battle.R
 import com.example.sea_battle.databinding.FragmentGameSettingsBinding
@@ -43,23 +43,36 @@ class GameSettingsFragment : Fragment() {
             val timeBound = binding.editTextTimeBound.text.toString()
             val password = binding.editTextPassword.text.toString()
             val isPublic = binding.radioButtonTypePublic.isChecked
-            if (!viewModel.checkTimeBound(
-                    requireContext(),
-                    timeBound
-                ) || (!isPublic && !viewModel.checkPassword(
-                    requireContext(),
-                    password
-                ))
-            ) {
+            val checkTimeBoundResult = viewModel.checkTimeBound(
+                requireContext(),
+                timeBound
+            )
+            if (checkTimeBoundResult != null) {
+                binding.textInputLayout.apply {
+                    error = checkTimeBoundResult
+                    startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.error))
+                }
                 return@setOnClickListener
             }
-            navigator.openFragment(StartGameFragment(),
+            if (!isPublic) {
+                val checkPasswordResult = viewModel.checkPassword(requireContext(), password)
+                if (checkPasswordResult != null) {
+                    binding.textInputLayoutPassword.apply {
+                        error = checkPasswordResult
+                        startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.error))
+                    }
+                    return@setOnClickListener
+                }
+            }
+            navigator.openFragment(
+                StartGameFragment(),
                 requireArguments().apply {
                     putBoolean("gameInited", false)
                     putInt("timeBound", timeBound.toInt())
                     putBoolean("isPublic", isPublic)
                     putString("password", if (isPublic) null else password)
-                }
+                },
+                this::class.java
             )
         }
         binding.radioGroup.setOnCheckedChangeListener { _, i ->
@@ -70,6 +83,16 @@ class GameSettingsFragment : Fragment() {
                 R.id.radioButtonTypePublic -> {
                     binding.textInputLayoutPassword.visibility = View.GONE
                 }
+            }
+        }
+        binding.editTextTimeBound.addTextChangedListener {
+            if (viewModel.checkTimeBound(requireContext(), it.toString()) == null) {
+                binding.textInputLayout.error = null
+            }
+        }
+        binding.editTextPassword.addTextChangedListener {
+            if (viewModel.checkPassword(requireContext(), it.toString()) == null) {
+                binding.textInputLayoutPassword.error = null
             }
         }
     }

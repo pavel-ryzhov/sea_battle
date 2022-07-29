@@ -51,7 +51,8 @@ class GameServiceImpl @Inject constructor() : GameService() {
     private var firstTurn = -1
     private var isJoined = true
     private var connectionErrorExpected = false
-    private var playAgain = false
+    private var thisPlayerWannaPlayAgain = false
+    private var anotherPlayerWannaPlayAgain = false
 
     override val clickLiveData = MutableLiveData<IntArray?>()
     override val bothPlayersAreReadyLiveData = MutableLiveData<Int?>()
@@ -76,10 +77,10 @@ class GameServiceImpl @Inject constructor() : GameService() {
             PLAY_AGAIN_TAG,
             EMPTY_DATA
         ))
-        if (playAgain){
+        if (anotherPlayerWannaPlayAgain){
             playAgainLiveData.postValue(Unit)
         }else{
-            playAgain = true
+            thisPlayerWannaPlayAgain = true
         }
     }
 
@@ -100,7 +101,8 @@ class GameServiceImpl @Inject constructor() : GameService() {
     }
 
     override fun start() {
-        playAgain = false
+        thisPlayerWannaPlayAgain = false
+        anotherPlayerWannaPlayAgain = false
         areFirstShipsGot = false
         connectionErrorExpected = false
         isInterrupted = false
@@ -148,7 +150,8 @@ class GameServiceImpl @Inject constructor() : GameService() {
     }
 
     override fun restart() {
-        playAgain = false
+        thisPlayerWannaPlayAgain = false
+        anotherPlayerWannaPlayAgain = false
         areFirstShipsGot = false
         connectionErrorExpected = false
         isInterrupted = false
@@ -227,10 +230,10 @@ class GameServiceImpl @Inject constructor() : GameService() {
                     socket.close()
                 }
                 PLAY_AGAIN_TAG -> {
-                    if (playAgain){
+                    if (thisPlayerWannaPlayAgain){
                         playAgainLiveData.postValue(Unit)
                     }else{
-                        playAgain = true
+                        anotherPlayerWannaPlayAgain = true
                         anotherPlayerWannaPlayAgainLiveData.postValue(Unit)
                     }
                 }

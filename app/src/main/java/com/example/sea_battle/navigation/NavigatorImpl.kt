@@ -17,7 +17,10 @@ class NavigatorImpl(context: Context) : Navigator {
             mutableMapOf()
     }
 
-    override fun openFragment(fragment: Fragment) {
+    override fun openFragment(fragment: Fragment, popFragment: Class<out Fragment>?) {
+        popFragment?.let {
+            popBackStack(it)
+        }
         supportFragmentManager.beginTransaction().apply {
             setCustomAnimations(
                 R.anim.slide_in,
@@ -33,9 +36,10 @@ class NavigatorImpl(context: Context) : Navigator {
 
     override fun openFragment(
         fragment: Fragment,
-        args: Bundle
+        args: Bundle,
+        popFragment: Class<out Fragment>?
     ) {
-        openFragment(fragment.apply { arguments = args })
+        openFragment(fragment.apply { arguments = args }, popFragment)
     }
 
     override fun doOnBackPressed(defaultAction: Runnable) {

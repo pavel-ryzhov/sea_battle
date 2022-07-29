@@ -52,7 +52,7 @@
         android:layout_marginHorizontal="48dp"
         android:layout_marginBottom="8dp"
         android:gravity="center"
-        android:text="@string/name_can_contain_chars"
+        android:text="@string/name_can_contain_letters_numbers_and_underscores"
         app:layout_constraintBottom_toTopOf="@id/textInputLayoutName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -66,6 +66,10 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="48dp"
         android:layout_marginTop="8dp"
+        app:boxStrokeErrorColor="@android:color/holo_red_dark"
+        app:errorEnabled="true"
+        app:errorIconTint="@android:color/holo_red_dark"
+        app:errorTextColor="@android:color/holo_red_dark"
         app:layout_constraintBottom_toTopOf="@id/buttonNext"
         app:layout_constraintTop_toBottomOf="@id/textViewNameInfo"
         app:layout_constraintVertical_chainStyle="packed">
@@ -75,7 +79,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/name"
-            android:inputType="textVisiblePassword" />
+            android:importantForAutofill="no"
+            android:inputType="textPersonName" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton

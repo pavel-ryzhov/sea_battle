@@ -35,17 +35,8 @@ class GameResultFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentGameResultBinding.inflate(inflater, container, false)
-        navigator.setOnBackPressed(this::class.java, false) {
+        navigator.setOnBackPressed(this::class.java, true) {
             viewModel.postExit()
-            for (i in 4 downTo 2) {
-                requireActivity().supportFragmentManager.apply {
-                    popBackStack(
-                        getBackStackEntryAt(i).id,
-                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                    )
-                }
-            }
-            (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
         }
         return binding.root
     }
@@ -99,15 +90,7 @@ class GameResultFragment : Fragment() {
             }
             playAgainLiveData.observe(viewLifecycleOwner) {
                 it?.let {
-                    requireActivity().supportFragmentManager.apply {
-                        for (i in 4 downTo 2) {
-                            popBackStack(
-                                getBackStackEntryAt(i).id,
-                                FragmentManager.POP_BACK_STACK_INCLUSIVE
-                            )
-                        }
-                    }
-                    navigator.openFragment(StartGameFragment(), requireArguments())
+                    navigator.openFragment(StartGameFragment(), requireArguments(), this@GameResultFragment::class.java)
                 }
             }
         }

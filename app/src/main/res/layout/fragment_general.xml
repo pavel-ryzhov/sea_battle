@@ -91,19 +91,6 @@
             android:textSize="20sp"
             tools:ignore="UnusedAttribute" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/buttonSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="8dp"
-            android:background="@drawable/rounded_background"
-            android:gravity="center"
-            android:padding="16dp"
-            android:text="@string/settings"
-            android:textAllCaps="false"
-            android:textColor="@color/foregroundColor"
-            android:textSize="20sp"
-            tools:ignore="UnusedAttribute" />
     </LinearLayout>
 
 

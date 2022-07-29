@@ -25,7 +25,8 @@
     <string name="not_all_ships_are_arranged">Not all ships are arranged!</string>
     <string name="your_field">Your field:</string>
     <string name="enter_name">Enter name</string>
-    <string name="name_can_contain_chars">Name can contain letters, numbers and underscopes</string>
+    <string name="name_can_contain_letters_numbers_and_underscores">Name can contain letters, numbers and underscores</string>
+    <string name="password_can_contain_only_letters_numbers_and_underscores">Password can contain only letters, numbers and underscores!</string>
     <string name="name">Name</string>
     <string name="change">Change</string>
     <string name="your_name">Your name:</string>
@@ -45,7 +46,8 @@
     <string name="another_player_exited">Another player exited</string>
     <string name="another_player_want_to_play_again">Another player want to play again</string>
     <string name="play">Play</string>
-
+    <string name="name_is_blank">Name is blank!</string>
+    <string name="name_can_contain_only_letters_numbers_and_underscores">Name can contain only letters, numbers and underscores</string>
     <string-array name="coords">
         <item>A</item>
         <item>B</item>
@@ -58,4 +60,18 @@
         <item>I</item>
         <item>J</item>
     </string-array>
+    <string name="this_field_cannot_be_blank">This field cannot be blank!</string>
+    <string name="the_time_must_be_less_than">The time must be less than</string>
+    <string name="minimum_value_is_10">Minimum value is 10!</string>
+    <string name="field">Field</string>
+    <string name="field_description">The playing field is a 10×10 square for each player, on which a fleet of ships is placed. The verticals are numbered from top to bottom and the horizontals are marked with letters from left to right.</string>
+    <string name="number_and_placement_of_ships">Number and placement of ships</string>
+    <string name="number_and_placement_of_ships_description">There is a certain layout of ships on the playing field. The ship consists of several decks or pipes (hence the name, for example, \"two-deck\" or \"two-pipe\"). On the playing field are:\n\t\t\t1 four-deck, ship, battleship, - a row of four cells;\n\t\t\t2 three-deck, cruisers, - rows of 3 cells;\n\t\t\t3 double-deck, destroyers, - rows of 2 cells;\n\t\t\t4 single-deck ships, torpedo boats, - 1 cell.\nWhen placing ships, they cannot touch each other with sides and corners.</string>
+    <string name="game_progress">Game progress</string>
+    <string name="game_progress_description">The instruction defines the conditions and sequence of moves:\n\t\t\t1. Initially, it is randomly chosen, who goes first.\n\t\t\t2. By taking the \"shot\", the player clicks on an enemy cell of the field.\n\t\t\t3. A cross is then placed in the cell; if hit, the cell is also painted over.\n\t\t\t4. If you miss, the right to move passes to another player; if you hit, the player turns again.\n\t\t\t5. A ship is considered sunk when all its cells are painted over. The winner is the one who first sinks all the ships of his opponent.</string>
+    <string name="timing">Timing</string>
+    <string name="timing_description">There is a time limit for each turn. The remaining time is shown by a red (green) line around the field.</string>
+    <string name="time_left_result">If you do not make your turn in the allotted time, you automatically lose.</string>
+    <string name="if_anything_remains_unclear">If anything remains unclear, here is link to more detailed rules:</string>
+    <string name="rules_link"><u>https://en.wikipedia.org/wiki/Battleship_(game)</u></string>
 </resources>

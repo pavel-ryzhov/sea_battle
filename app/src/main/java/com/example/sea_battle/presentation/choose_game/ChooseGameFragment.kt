@@ -1,6 +1,7 @@
 package com.example.sea_battle.presentation.choose_game
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -83,7 +84,8 @@ class ChooseGameFragment : Fragment() {
                     if (viewModel.notifyClientJoinedGame(host)) {
                         navigator.openFragment(
                             StartGameFragment().also { it.setHost(host) },
-                            Bundle().apply { putInt("timeBound", host.timeBound) }
+                            Bundle().apply { putInt("timeBound", host.timeBound) },
+                            this@ChooseGameFragment::class.java
                         )
                         viewModel.interrupt()
                     }

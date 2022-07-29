@@ -10,6 +10,7 @@ import com.example.sea_battle.data.services.client.ClientServiceImpl
 import com.example.sea_battle.databinding.DialogJoinPrivateGameBinding
 import com.example.sea_battle.entities.Host
 import com.example.sea_battle.navigation.Navigator
+import com.example.sea_battle.presentation.choose_game.ChooseGameFragment
 import com.example.sea_battle.presentation.choose_game.ChooseGameViewModel
 import com.example.sea_battle.presentation.start_game.StartGameFragment
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +38,7 @@ class JoinPrivateGameDialog(context: Context, val navigator: Navigator, val view
                         hide()
                         CoroutineScope(Dispatchers.IO + Job()).launch(Dispatchers.IO) {
                             if (viewModel.notifyClientJoinedGame(host)) {
+                                navigator.popBackStack(ChooseGameFragment::class.java)
                                 navigator.openFragment(
                                     StartGameFragment().also { it.setHost(host) },
                                     Bundle()

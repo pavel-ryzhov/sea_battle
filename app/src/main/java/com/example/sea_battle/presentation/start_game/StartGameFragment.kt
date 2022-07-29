@@ -46,12 +46,10 @@ class StartGameFragment : Fragment() {
                         getString(R.string.do_you_really_want_to_exit),
                         onConfirmed = {
                             viewModel.postExit()
-                            navigator.popBackStack(StartGameFragment::class.java)
                             (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
                         }).show()
                 } else {
                     viewModel.close()
-                    navigator.popBackStack(StartGameFragment::class.java)
                     (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
                 }
             }
@@ -132,7 +130,7 @@ class StartGameFragment : Fragment() {
                                 if (!isHost) host.timeBound else requireArguments().getInt("timeBound")
                             )
                         }
-                    })
+                    }, this@StartGameFragment::class.java)
                     if (!gameInited)
                         viewModel.setOtherPlayer(if (!isHost) this@StartGameFragment.host.socket else client.socket)
                     viewModel.notifyThisPlayerIsReadyToStart(binding.field.ships)

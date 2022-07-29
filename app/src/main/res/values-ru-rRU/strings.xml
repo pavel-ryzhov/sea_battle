@@ -25,7 +25,8 @@
     <string name="server_is_not_available">Сервер не доступен!</string>
     <string name="not_all_ships_are_arranged">Не все корабли расставлены!</string>
     <string name="your_field">Ваше поле:</string>
-    <string name="name_can_contain_chars">Имя может содержать буквы, цифры и знаки подчеркивания</string>
+    <string name="name_can_contain_letters_numbers_and_underscores">Имя может содержать буквы, цифры и знаки подчеркивания</string>
+    <string name="password_can_contain_only_letters_numbers_and_underscores">Пароль может содержать только буквы, цифры и знаки подчеркивания!</string>
     <string name="enter_name">Введите имя</string>
     <string name="name">Имя</string>
     <string name="change">Изменить</string>
@@ -34,7 +35,6 @@
     <string name="create_game">Создать игру</string>
     <string name="join_game">Присоединиться к игре</string>
     <string name="settings">Настройки</string>
-
     <string-array name="coords">
         <item>А</item>
         <item>Б</item>
@@ -59,4 +59,20 @@
     <string name="another_player_exited">Другой игрок вышел</string>
     <string name="another_player_want_to_play_again">Другой игрок хочет сыграть ещё раз</string>
     <string name="play">Играть</string>
+    <string name="this_field_cannot_be_blank">Это поле нельзя оставить пустым!</string>
+    <string name="the_time_must_be_less_than">Время должно быть меньше</string>
+    <string name="minimum_value_is_10">Минимальное значение 10!</string>
+    <string name="name_is_blank">Имя пустое!</string>
+    <string name="name_can_contain_only_letters_numbers_and_underscores">Имя может содержать только буквы, цифры и знаки подчеркивания!</string>
+    <string name="field">Поле</string>
+    <string name="field_description">Игровое поле — квадрат 10×10 у каждого игрока, на котором размещается флот кораблей. Вертикали нумеруются сверху вниз, а горизонтали помечаются буквами слева направо.</string>
+    <string name="number_and_placement_of_ships">Число и размещение кораблей</string>
+    <string name="number_and_placement_of_ships_description">На игровом поле присутствует определенная раскладка кораблей. Корабль состоит из нескольких палуб или труб (отсюда и название, например, «двухпалубный» или «двухтрубный»). На игровом поле находятся:\n\t\t\t1 корабль — ряд из 4 клеток («четырёхпалубный»; линкор)\n\t\t\t2 корабля — ряд из 3 клеток («трёхпалубные»; крейсера)\n\t\t\t3 корабля — ряд из 2 клеток («двухпалубные»; эсминцы)\n\t\t\t4 корабля — 1 клетка («однопалубные»; торпедные катера)\nПри размещении корабли не могут касаться друг друга сторонами и углами.</string>
+    <string name="game_progress">Ход игры</string>
+    <string name="game_progress_description">Инструкция определяет условия и последовательность ходов:\n\t\t\t1. Изначально рандомно выбирается, кто пойдет первым.\n\t\t\t2. Делая «выстрел», игрок кликает на клетку поля врага.\n\t\t\t3. После этого в клетку ставится крест, при попадании клетка также закрашивается.\n\t\t\t4. При промахе право хода передаётся другому игроку, при попадании игрок ходит повторно.\n\t\t\t5. Корабль считается потопленным, когда все его клетки закрашены. Побеждает тот, кто первым потопит все корабли противника.</string>
+    <string name="timing">Время хода</string>
+    <string name="timing_description">Для каждого хода есть ограничение по времени. Оставшееся время показывается красной (зелёной) линией вокруг поля.</string>
+    <string name="time_left_result">Если вы не успели походить за отведённое время, вы автоматически проигрываете.</string>
+    <string name="if_anything_remains_unclear">Если что-то осталось непонятным, вот ссылка на более подробные правила:</string>
+    <string name="rules_link"><u>https://ru.wikipedia.org/wiki/Морской_бой_(игра)</u></string>
 </resources>

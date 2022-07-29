@@ -46,7 +46,7 @@ class PlaygroundFragment : Fragment() {
                     getString(R.string.do_you_really_want_to_exit),
                     onConfirmed = {
                         viewModel.postExit()
-                        exitFragment()
+                        (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
                     }).show()
             }
         }
@@ -77,7 +77,8 @@ class PlaygroundFragment : Fragment() {
                         GameResultFragment().apply { init(it) },
                         requireArguments().apply {
                             putBoolean("gameInited", true)
-                        }
+                        },
+                        this@PlaygroundFragment::class.java
                     )
                 }
             }
@@ -87,34 +88,17 @@ class PlaygroundFragment : Fragment() {
                         requireActivity(),
                         getString(R.string.another_player_left_the_game)
                     ) {
-                        exitFragment()
+                        (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
                     }.show()
                 }
             }
             connectionErrorLiveData.observe(viewLifecycleOwner) {
                 it?.let {
                     InfoDialog(requireActivity(), getString(R.string.connection_error)) {
-                        exitFragment()
+                        (requireActivity() as MainActivity).onBackPressedAppCompatActivity()
                     }.show()
                 }
             }
-        }
-    }
-
-    private fun exitFragment() {
-        requireActivity().apply {
-//            supportFragmentManager.let {
-//                it.popBackStack(
-//                    it.getBackStackEntryAt(3).id,
-//                    FragmentManager.POP_BACK_STACK_INCLUSIVE
-//                )
-//                it.popBackStack(
-//                    it.getBackStackEntryAt(2).id,
-//                    FragmentManager.POP_BACK_STACK_INCLUSIVE
-//                )
-//            }
-            navigator.popBackStack(PlaygroundFragment::class.java, StartGameFragment::class.java)
-            (this as MainActivity).onBackPressedAppCompatActivity()
         }
     }
 

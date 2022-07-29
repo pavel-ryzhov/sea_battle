@@ -51,37 +51,57 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
     private var turnStartTime: Long = -1
     private val crosses = mutableSetOf<IntArray>()
     private val hits = mutableSetOf<IntArray>()
+    private var locationX = 0f
+    private var locationY = 0f
+    private var click = false
+    private var clickStartedAt: Long = -1
 
 
     init {
         setOnTouchListener { _, motionEvent ->
-            if (motionEvent.action == MotionEvent.ACTION_UP) {
-                if (turn == THIS_PLAYER_TURN) {
-                    if (isClickInField(OTHER_PLAYER_FIELD, motionEvent.x, motionEvent.y)) {
-                        val coords = getCoordsByLocation(motionEvent.x, motionEvent.y)
-                        if (!crosses.containsAllIntArrays(setOf(coords))) {
-                            CoroutineScope(Dispatchers.IO + Job()).launch(Dispatchers.IO) {
-                                gameService?.executeClick(coords.copyOfRange(1, 3))
-                            }
-                            crosses.addIntArray(coords)
-                            val ship = getShipByCoords(
-                                OTHER_PLAYER_FIELD,
-                                coords.component2(),
-                                coords.component3()
-                            )
-                            turnStartTime = System.currentTimeMillis()
-                            if (ship != null) {
-                                hits.add(coords)
-                                checkIfShipIsSunk(OTHER_PLAYER_FIELD, ship)
-                                Vibrator.vibrate(context, 100)
-                            } else {
-                                turn = (turn + 1) % 2
+            when(motionEvent.action){
+                MotionEvent.ACTION_UP -> {
+                    click = false
+                    if (turn == THIS_PLAYER_TURN) {
+                        if (isClickInField(OTHER_PLAYER_FIELD, motionEvent.x, motionEvent.y)) {
+                            val coords = getCoordsByLocation(motionEvent.x, motionEvent.y)
+                            if (!crosses.containsAllIntArrays(setOf(coords))) {
+                                CoroutineScope(Dispatchers.IO + Job()).launch(Dispatchers.IO) {
+                                    gameService?.executeClick(coords.copyOfRange(1, 3))
+                                }
+                                crosses.addIntArray(coords)
+                                val ship = getShipByCoords(
+                                    OTHER_PLAYER_FIELD,
+                                    coords.component2(),
+                                    coords.component3()
+                                )
+                                turnStartTime = System.currentTimeMillis()
+                                if (ship != null) {
+                                    hits.add(coords)
+                                    checkIfShipIsSunk(OTHER_PLAYER_FIELD, ship)
+                                    Vibrator.vibrate(context, 100)
+                                } else {
+                                    turn = (turn + 1) % 2
+                                }
                             }
                         }
                     }
                 }
+                MotionEvent.ACTION_DOWN -> {
+                    if (turn == THIS_PLAYER_TURN) {
+                        click = true
+                        clickStartedAt = System.currentTimeMillis()
+                        locationX = motionEvent.x
+                        locationY = motionEvent.y
+                    }
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (click){
+                        locationX = motionEvent.x
+                        locationY = motionEvent.y
+                    }
+                }
             }
-
             true
         }
     }
@@ -289,9 +309,33 @@ class PlaygroundView(context: Context, attributeSet: AttributeSet) : View(contex
                 paint
             )
 
+            if (click){
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - clickStartedAt > 200) {
+                    val coords = getCoordsByLocation(locationX, locationY)
+                    if (coords[0] == OTHER_PLAYER_FIELD && coords[1] > -1 && coords[2] > -1) {
+                        it.drawRect(
+                            marginX + cellWidth,
+                            marginY + (15 + coords[2]) * cellWidth,
+                            marginX + cellWidth * 11,
+                            marginY + (16 + coords[2]) * cellWidth,
+                            paint.apply {
+                                style = Paint.Style.FILL
+                                color = ContextCompat.getColor(context, R.color.transparent_red)
+                            }
+                        )
+                        it.drawRect(
+                            marginX + cellWidth * (1 + coords[1]),
+                            marginY + cellWidth * 15,
+                            marginX + cellWidth * (2 + coords[1]),
+                            marginY + cellWidth * 25,
+                            paint
+                        )
+                    }
+                }
+            }
+
             drawTime(it)
-
-
         }
 
         postInvalidateOnAnimation()

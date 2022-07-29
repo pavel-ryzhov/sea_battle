@@ -4,15 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.sea_battle.data.preferences.AppPreferences
-import com.example.sea_battle.presentation.auth.AuthFragment
 import com.example.sea_battle.databinding.FragmentGeneralBinding
 import com.example.sea_battle.navigation.Navigator
+import com.example.sea_battle.presentation.auth.AuthFragment
 import com.example.sea_battle.presentation.choose_game.ChooseGameFragment
 import com.example.sea_battle.presentation.game_settings.GameSettingsFragment
-import com.example.sea_battle.presentation.start_game.StartGameFragment
 import com.example.sea_battle.presentation.rules.RulesFragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

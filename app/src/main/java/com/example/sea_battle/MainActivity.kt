@@ -53,11 +53,6 @@ class MainActivity : AppCompatActivity() {
     fun onBackPressedAppCompatActivity() = super.onBackPressed()
 
     override fun onBackPressed() {
-//        if (supportFragmentManager.backStackEntryCount <= 1) {
-//            finish()
-//        } else {
-//            super.onBackPressed()
-//        }
         navigator.doOnBackPressed(this::onBackPressedAppCompatActivity)
     }
 

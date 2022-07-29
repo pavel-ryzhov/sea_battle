@@ -105,7 +105,6 @@ class ClientServiceImpl @Inject constructor() : ClientService() {
                 while (!portIsSelected && startPort < START_PORT + nPorts * 5 && !isInterrupted) {
                     val futures: ArrayList<Future<Socket?>> = ArrayList()
                     for (i in 0 until nPorts) {
-                        Log.d("ssss", "adding future...")
                         futures.add(executorService.submit<Socket?> {
                             try {
                                 val socket = Socket()

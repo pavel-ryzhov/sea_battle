@@ -11,4 +11,5 @@
     <color name="foregroundColor">#FF000000</color>
     <color name="backgroundColor">#FFFFFFFF</color>
     <color name="loadingBackground">#AA888888</color>
+    <color name="transparent_red">#88BB0000</color>
 </resources>
