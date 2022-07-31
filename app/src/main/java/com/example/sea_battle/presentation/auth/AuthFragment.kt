@@ -4,13 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.view.animation.AnimationUtils
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.sea_battle.MainActivity
+import com.example.sea_battle.R
 import com.example.sea_battle.databinding.FragmentAuthBinding
-import com.example.sea_battle.presentation.general.GeneralFragment
 import com.example.sea_battle.navigation.Navigator
+import com.example.sea_battle.presentation.general.GeneralFragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -20,7 +22,6 @@ class AuthFragment : Fragment(){
     private lateinit var binding: FragmentAuthBinding
     @Inject
     lateinit var navigator: Navigator
-    private var executeLiveData: Boolean = true
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,28 +42,31 @@ class AuthFragment : Fragment(){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.buttonNext.setOnClickListener {
-            executeLiveData = true
-            viewModel.checkName(binding.editTextName.text.toString())
+            val name = binding.editTextName.text.toString()
+            val checkNameResult = viewModel.checkName(requireContext(), name)
+            if (checkNameResult == null){
+                navigator.openFragment(GeneralFragment(), Bundle().apply { putString("name", name) })
+            }else{
+                binding.textInputLayoutName.apply {
+                    error = checkNameResult
+                    startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.error))
+                }
+            }
         }
         binding.relativeLayoutBack.setOnClickListener {
             requireActivity().onBackPressed()
         }
-        subscribeOnLiveData()
-    }
-    private fun subscribeOnLiveData(){
-        viewModel.apply {
-            nameIsCorrectLiveData.observe(viewLifecycleOwner){
-                if (executeLiveData) {
-                    navigator.openFragment(GeneralFragment(), Bundle().apply { putString("name", it) })
-                    executeLiveData = false
-                }
-            }
-            nameIsWrongLiveData.observe(viewLifecycleOwner){
-                if (executeLiveData) {
-                    Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-                    executeLiveData = false
-                }
+        binding.editTextName.addTextChangedListener {
+            val name = binding.editTextName.text.toString()
+            val checkNameResult = viewModel.checkNameWithoutSaving(requireContext(), name)
+            if (checkNameResult == null){
+                binding.textInputLayoutName.error = null
             }
         }
+    }
+
+    override fun onResume() {
+        (requireActivity() as MainActivity).hideSystemUI()
+        super.onResume()
     }
 }
